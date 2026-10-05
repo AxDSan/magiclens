@@ -1,0 +1,20 @@
+node_modules/
+.output/
+.wxt/
+dist/
+*.zip
+*.xpi
+
+# Test output
+test-results/
+playwright-report/
+blob-report/
+tests/e2e/.fixtures/
+
+# Local tooling
+codedb.snapshot
+.codegraph/
+.env
+.env.*
+.DS_Store
+*.log

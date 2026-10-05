@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>MagicLens test page</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 24px 40px 600px;
+        background: #f4f4f6;
+        font-family: sans-serif;
+      }
+      section {
+        margin: 0 0 48px;
+      }
+      #plain {
+        display: block;
+        width: 720px;
+      }
+      #cross {
+        display: block;
+        width: 540px;
+      }
+      #contain {
+        display: block;
+        box-sizing: content-box;
+        width: 600px;
+        height: 400px;
+        padding: 10px;
+        border: 4px solid #c8c8d0;
+        background: #222;
+        object-fit: contain;
+      }
+      #cover {
+        display: block;
+        width: 320px;
+        height: 320px;
+        object-fit: cover;
+        object-position: 20% 50%;
+        border-radius: 24px;
+      }
+      #cv {
+        display: block;
+        background: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>MagicLens fixtures</h1>
+    <section><img id="plain" src="/fx/doc.png" alt="" /></section>
+    <section><img id="cross" src="http://127.0.0.1:4600/fx/dark.png" alt="" /></section>
+    <section><img id="contain" src="/fx/banner.png" alt="" /></section>
+    <section><img id="cover" src="/fx/doc.png" alt="" /></section>
+    <section><canvas id="cv" width="640" height="220"></canvas></section>
+    <script>
+      const canvas = document.getElementById('cv');
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#202020';
+      const lines = [
+        { text: 'Canvas rendered heading', x: 30, y: 80, size: 38 },
+        { text: 'Pixels drawn by script', x: 30, y: 160, size: 30 },
+      ];
+      window.canvasWords = [];
+      for (const line of lines) {
+        ctx.font = `${line.size}px Arial, "Liberation Sans", sans-serif`;
+        ctx.fillText(line.text, line.x, line.y);
+        let cursor = 0;
+        for (const word of line.text.split(' ')) {
+          const before = line.text.slice(0, line.text.indexOf(word, cursor));
+          cursor = before.length + word.length;
+          const m = ctx.measureText(word);
+          const x = line.x + ctx.measureText(before).width;
+          window.canvasWords.push({
+            text: word,
+            x: x - m.actualBoundingBoxLeft,
+            y: line.y - m.actualBoundingBoxAscent,
+            w: m.actualBoundingBoxLeft + m.actualBoundingBoxRight,
+            h: m.actualBoundingBoxAscent + m.actualBoundingBoxDescent,
+          });
+        }
+      }
+    </script>
+  </body>
+</html>

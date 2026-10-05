@@ -1,0 +1,155 @@
+body {
+  width: 360px;
+}
+
+main {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+header.brand > div {
+  flex: 1;
+}
+
+.icon-btn {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.icon-btn:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.icon-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.12s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.action:first-child {
+  border: 0;
+  color: #fff;
+  background: linear-gradient(135deg, #5b6cff, #9b5cff 60%, #d35cff);
+  box-shadow: 0 10px 24px rgba(91, 108, 255, 0.35);
+}
+
+.action:first-child small {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.action:first-child kbd {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+.action:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.action:active {
+  transform: scale(0.99);
+}
+
+.action span {
+  display: flex;
+  flex-direction: column;
+}
+
+.action small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.engine {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.row .segmented {
+  flex: 1;
+}
+
+.label {
+  width: 52px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.provider .pill {
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.error {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(214, 51, 76, 0.1);
+  color: var(--danger);
+  font-size: 12.5px;
+}
+
+footer {
+  color: var(--faint);
+  font-size: 12px;
+}

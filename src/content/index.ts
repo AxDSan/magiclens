@@ -1,0 +1,82 @@
+import { browser } from 'wxt/browser';
+import type { ContentScriptContext } from 'wxt/utils/content-script-context';
+import type { TriggerMessage } from '../shared/messages';
+import { getSettings, onSettingsChanged, type Settings } from '../shared/settings';
+import { engineClient } from './client';
+import { Lens } from './lens';
+import { HoverButton } from './ui/hover';
+import { Picker } from './ui/picker';
+import { UiRoot } from './ui/root';
+
+const FLAG = '__magiclensActive';
+
+export async function boot(ctx: ContentScriptContext) {
+  const scope = globalThis as unknown as Record<string, boolean>;
+  // Guards against double injection (manifest + on-demand scripting.executeScript).
+  if (scope[FLAG]) return;
+  scope[FLAG] = true;
+
+  let settings: Settings = await getSettings();
+  const root = new UiRoot(settings.reducedMotion);
+  const lens = new Lens(root, settings);
+  const picker = new Picker(root);
+  const hover = new HoverButton(
+    root,
+    (target, event) => void lens.read(target, event.shiftKey ? 'llm' : event.altKey ? 'local' : undefined),
+    () => picker.active,
+  );
+  const apply = (next: Settings) => {
+    hover.enabled = next.hoverButton;
+    hover.minSize = next.minImageSize;
+    if (!next.hoverButton) hover.hide(true);
+  };
+  apply(settings);
+
+  const stopWatching = onSettingsChanged((next) => {
+    settings = next;
+    lens.updateSettings(next);
+    lens.refreshAi();
+    apply(next);
+  });
+
+  const pick = () => {
+    hover.hide(true);
+    picker.start((target) => void lens.read(target));
+  };
+
+  const onMessage = (message: TriggerMessage, _sender: unknown, sendResponse: (response: unknown) => void) => {
+    if (message?.t !== 'trigger') return;
+    sendResponse({ ok: true });
+    switch (message.mode) {
+      case 'main':
+        if (!lens.readMain(message.engine)) {
+          root.toast('No image found in view. Click one to read it.');
+          pick();
+        }
+        break;
+      case 'pick':
+        pick();
+        break;
+      case 'all':
+        if (!lens.readAll(message.engine)) root.toast('No images with a readable size in view.');
+        break;
+      case 'context': {
+        const target = lens.contextTarget(message.srcUrl);
+        if (target) void lens.read(target, message.engine);
+        else root.toast('MagicLens could not find an image there.');
+        break;
+      }
+    }
+  };
+  browser.runtime.onMessage.addListener(onMessage);
+
+  ctx.onInvalidated(() => {
+    scope[FLAG] = false;
+    browser.runtime.onMessage.removeListener(onMessage);
+    stopWatching();
+    picker.stop();
+    hover.destroy();
+    root.destroy();
+    engineClient.disconnect();
+  });
+}
