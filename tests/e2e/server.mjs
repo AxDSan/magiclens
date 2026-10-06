@@ -6,10 +6,20 @@ import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const roots = { '/fx/': join(here, '.fixtures'), '/': join(here, 'site') };
+let hotlinkDenied = 0;
 const types = { '.html': 'text/html', '.png': 'image/png', '.json': 'application/json', '.js': 'text/javascript' };
 
 function serveStatic(req, res) {
   const url = new URL(req.url, 'http://x');
+  // Hotlink protection, as many CDNs do: only pages from the fixture site may embed.
+  if (url.pathname.startsWith('/hotlink/')) {
+    if (!(req.headers.referer ?? '').startsWith('http://localhost:4599')) {
+      hotlinkDenied++;
+      return res.writeHead(403).end('hotlinking denied');
+    }
+    req.url = `/fx/${url.pathname.slice('/hotlink/'.length)}`;
+    return serveStatic(req, res);
+  }
   for (const [prefix, dir] of Object.entries(roots)) {
     if (!url.pathname.startsWith(prefix)) continue;
     const rel = normalize(url.pathname.slice(prefix.length) || 'index.html').replace(/^(\.\.[/\\])+/, '');
@@ -101,6 +111,9 @@ createServer(async (req, res) => {
     ollamaLog.push({ path: url.pathname, origin });
     if (origin && /^(chrome|moz|safari-web)-extension:/.test(origin)) return res.writeHead(403, cors).end('Forbidden');
     url.pathname = url.pathname.slice('/ollama'.length);
+  }
+  if (url.pathname === '/mock/hotlink-denied') {
+    return res.writeHead(200, { ...cors, 'content-type': 'application/json' }).end(JSON.stringify({ count: hotlinkDenied }));
   }
   if (url.pathname === '/mock/ollama-log') {
     return res.writeHead(200, { ...cors, 'content-type': 'application/json' }).end(JSON.stringify(ollamaLog));

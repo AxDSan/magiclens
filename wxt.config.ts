@@ -79,6 +79,10 @@ export default defineConfig({
         }
       : {}),
   }),
+  zip: {
+    // Keep local tooling and test output out of the archive AMO reviewers download.
+    excludeSources: ['codedb.snapshot', '.codegraph/**', 'test-results/**', 'tests/e2e/.fixtures/**'],
+  },
   hooks: {
     'build:publicAssets': (_wxt, files) => {
       files.push(...tesseractAssets());

@@ -43,6 +43,10 @@
         display: block;
         background: #fff;
       }
+      #hotlink {
+        display: block;
+        width: 600px;
+      }
     </style>
   </head>
   <body>
@@ -52,6 +56,7 @@
     <section><img id="contain" src="/fx/banner.png" alt="" /></section>
     <section><img id="cover" src="/fx/doc.png" alt="" /></section>
     <section><canvas id="cv" width="640" height="220"></canvas></section>
+    <section><img id="hotlink" src="http://127.0.0.1:4600/hotlink/dark.png" alt="" /></section>
     <script>
       const canvas = document.getElementById('cv');
       const ctx = canvas.getContext('2d');

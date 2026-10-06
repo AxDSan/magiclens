@@ -59,7 +59,7 @@ export class Overlay {
 
   constructor(
     readonly target: Element,
-    public mapper: Mapper,
+    private mapper: Mapper,
     private panelActions: PanelActions,
     private aiReady: boolean,
   ) {
@@ -106,6 +106,13 @@ export class Overlay {
 
   get isClosed() {
     return this.closed;
+  }
+
+  /** Switches to a different image-to-element mapping (e.g. after a screenshot fallback). */
+  setMapper(mapper: Mapper) {
+    this.mapper = mapper;
+    this.map = null;
+    this.mapKey = '';
   }
 
   private setState(state: OverlayState) {

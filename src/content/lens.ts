@@ -182,7 +182,7 @@ export class Lens {
         if (event.t === 'captured') {
           this.showUi();
           if (!current) current = this.createOverlay(target, capture.mapper);
-          else current.mapper = capture.mapper;
+          else current.setMapper(capture.mapper);
           this.bindClose(current, cancel);
           return;
         }

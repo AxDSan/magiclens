@@ -5,6 +5,7 @@ import {
   FIXTURES,
   lensByHover,
   matchWords,
+  MOCK,
   overlaySpans,
   setSettings,
   test,
@@ -19,11 +20,23 @@ async function expectPlacement(page: Page, selector: string, fixture: keyof type
   expect(ratio, `misplaced or missing words: ${misses.join(', ')}`).toBeGreaterThanOrEqual(minRatio);
 }
 
-async function triggerFromBackground(sw: Worker, mode: 'main' | 'pick' | 'all') {
-  await sw.evaluate(async (mode) => {
-    const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
-    await chrome.tabs.sendMessage(tab.id!, { t: 'trigger', mode });
-  }, mode);
+async function triggerFromBackground(sw: Worker, mode: 'main' | 'pick' | 'all' | 'context', srcUrl?: string) {
+  await sw.evaluate(
+    async ({ mode, srcUrl }) => {
+      const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+      await chrome.tabs.sendMessage(tab.id!, { t: 'trigger', mode, srcUrl });
+    },
+    { mode, srcUrl },
+  );
+}
+
+async function canvasExpected(page: Page) {
+  return page.evaluate(() => {
+    const r = document.getElementById('cv')!.getBoundingClientRect();
+    return (window as unknown as { canvasWords: { text: string; x: number; y: number; w: number; h: number }[] }).canvasWords.map(
+      (w) => ({ ...w, x: r.left + w.x, y: r.top + w.y }),
+    );
+  });
 }
 
 declare const chrome: {
@@ -76,15 +89,41 @@ test.describe('local OCR overlay', () => {
     await page.locator('#cv').hover();
     await page.locator('magiclens-root .hbtn[data-show]').click();
     await waitForState(page, 'ready');
-    const spans = await overlaySpans(page);
-    const expected = await page.evaluate(() => {
-      const r = document.getElementById('cv')!.getBoundingClientRect();
-      return (window as unknown as { canvasWords: { text: string; x: number; y: number; w: number; h: number }[] }).canvasWords.map(
-        (w) => ({ ...w, x: r.left + w.x, y: r.top + w.y }),
-      );
-    });
-    const { ratio } = matchWords(expected, spans);
+    const { ratio } = matchWords(await canvasExpected(page), await overlaySpans(page));
     expect(ratio).toBeGreaterThanOrEqual(0.85);
+  });
+
+  test('hotlink-protected image falls back to a screenshot', async ({ page }) => {
+    // The CDN refuses the engine's download (no page Referer) and the cross-origin pixels
+    // are unreadable in the page, so MagicLens must read a screenshot instead.
+    const denied = async () => (await (await fetch(`${MOCK}/mock/hotlink-denied`)).json()).count as number;
+    const before = await denied();
+    await lensByHover(page, '#hotlink');
+    await waitForState(page, 'ready');
+    expect(await denied()).toBeGreaterThan(before);
+    await expectPlacement(page, '#hotlink', 'dark');
+  });
+
+  test('picker reads the element that was clicked', async ({ page, sw }) => {
+    await page.locator('#cv').scrollIntoViewIfNeeded();
+    await triggerFromBackground(sw, 'pick');
+    await page.locator('magiclens-root .hint.on').waitFor();
+    const box = (await page.locator('#cv').boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 3 });
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    await waitForState(page, 'ready');
+    const { ratio } = matchWords(await canvasExpected(page), await overlaySpans(page));
+    expect(ratio).toBeGreaterThanOrEqual(0.85);
+  });
+
+  test('context menu reads the right-clicked image', async ({ page, sw }) => {
+    await page.locator('#plain').scrollIntoViewIfNeeded();
+    await page.locator('#plain').click({ button: 'right' });
+    await page.keyboard.press('Escape');
+    const src = await page.locator('#plain').evaluate((img: HTMLImageElement) => img.currentSrc);
+    await triggerFromBackground(sw, 'context', src);
+    await waitForState(page, 'ready');
+    await expectPlacement(page, '#plain', 'doc');
   });
 
   test('copy gives clean text with spaces and line breaks', async ({ context, page }) => {
