@@ -84,6 +84,14 @@ export default defineConfig({
     excludeSources: ['codedb.snapshot', '.codegraph/**', 'test-results/**', 'tests/e2e/.fixtures/**'],
   },
   hooks: {
+    'entrypoints:resolved': (wxt, entrypoints) => {
+      // The offscreen engine page is Chromium-only: Firefox and Safari host the engine in
+      // their background page. Removing it here (rather than with an include filter) keeps
+      // those builds free of a "skipped entrypoints" warning.
+      if (chromium.has(wxt.config.browser)) return;
+      const index = entrypoints.findIndex((entrypoint) => entrypoint.name === 'offscreen');
+      if (index >= 0) entrypoints.splice(index, 1);
+    },
     'build:publicAssets': (_wxt, files) => {
       files.push(...tesseractAssets());
     },
