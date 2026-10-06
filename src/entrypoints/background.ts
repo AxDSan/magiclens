@@ -7,7 +7,8 @@ import {
   type EngineEvent,
   type FromEngine,
 } from '../shared/messages';
-import { getSettings } from '../shared/settings';
+import { allowLocalModelServers } from '../shared/local-models';
+import { getSettings, onSettingsChanged } from '../shared/settings';
 import { triggerInTab } from '../shared/trigger';
 import { errorMessage } from '../shared/util';
 
@@ -101,6 +102,11 @@ export default defineBackground(() => {
   };
 
   const engine = createTransport(deliver);
+
+  const syncLocalModelRules = (settings: Parameters<typeof allowLocalModelServers>[0]) =>
+    allowLocalModelServers(settings).catch((error) => console.warn('[MagicLens] DNR', error));
+  void getSettings().then(syncLocalModelRules);
+  onSettingsChanged(syncLocalModelRules);
 
   // captureVisibleTab is limited to two calls per second.
   let lastCapture = 0;

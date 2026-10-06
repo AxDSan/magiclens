@@ -32,6 +32,7 @@ createServer(serveStatic).listen(4600, '127.0.0.1');
 // ───────────── mock LLM ─────────────
 let script = { lines: [], translations: {}, explain: 'This image shows **test text**.', delayMs: 15 };
 const requests = [];
+const ollamaLog = [];
 
 function readBody(req) {
   return new Promise((resolve) => {
@@ -94,6 +95,16 @@ createServer(async (req, res) => {
   };
   if (req.method === 'OPTIONS') return res.writeHead(204, cors).end();
   const url = new URL(req.url, 'http://x');
+  // Behaves like Ollama: requests carrying an unknown (extension) Origin are refused.
+  if (url.pathname.startsWith('/ollama/')) {
+    const origin = req.headers.origin ?? null;
+    ollamaLog.push({ path: url.pathname, origin });
+    if (origin && /^(chrome|moz|safari-web)-extension:/.test(origin)) return res.writeHead(403, cors).end('Forbidden');
+    url.pathname = url.pathname.slice('/ollama'.length);
+  }
+  if (url.pathname === '/mock/ollama-log') {
+    return res.writeHead(200, { ...cors, 'content-type': 'application/json' }).end(JSON.stringify(ollamaLog));
+  }
   if (url.pathname === '/mock/script' && req.method === 'POST') {
     script = { ...script, ...JSON.parse(await readBody(req)) };
     requests.length = 0;

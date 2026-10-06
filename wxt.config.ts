@@ -44,6 +44,7 @@ export default defineConfig({
       'contextMenus',
       'activeTab',
       'scripting',
+      'declarativeNetRequestWithHostAccess',
       ...(chromium.has(browser) ? ['offscreen'] : []),
     ],
     host_permissions: ['<all_urls>'],

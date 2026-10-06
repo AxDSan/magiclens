@@ -166,7 +166,9 @@ function ProviderSection({ settings, update }: { settings: Settings; update: (pa
             }}
           >
             <span>{PROVIDERS[pid].label}</span>
-            {providerReady({ ...settings, provider: pid }) && <i class="ready" title="Configured" />}
+            {PROVIDERS[pid].needsKey && providerReady({ ...settings, provider: pid }) && (
+              <i class="ready" title="API key saved" />
+            )}
           </button>
         ))}
       </div>
