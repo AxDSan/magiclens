@@ -245,15 +245,16 @@ export function groupBlocks(lines: OcrLine[], prefix = 'b'): OcrBlock[] {
   return blocks;
 }
 
-/** Parses "[id] translation" lines. */
-export function parseTranslations(raw: string): Map<string, string> {
+/** Parses "[id] translation" lines, keeping only ids that exist. */
+export function parseTranslations(raw: string, knownIds: Iterable<string>): Map<string, string> {
+  const known = new Set(knownIds);
   const out = new Map<string, string>();
   let last: string | null = null;
   for (const line of stripThinking(raw).split(/\r?\n/)) {
-    const match = /^\s*\[([A-Za-z]+\d+)\]\s?(.*)$/.exec(line);
-    if (match) {
-      last = match[1];
-      out.set(last, match[2].trim());
+    const tagged = /^\s*\[([^\]]+)\]\s?(.*)$/.exec(line);
+    if (tagged) {
+      last = known.has(tagged[1]) ? tagged[1] : null;
+      if (last) out.set(last, tagged[2].trim());
     } else if (last && line.trim()) {
       out.set(last, `${out.get(last)} ${line.trim()}`);
     }

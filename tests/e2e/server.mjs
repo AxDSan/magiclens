@@ -77,7 +77,7 @@ function answer(prompt) {
     };
   }
   if (prompt.includes('Translate each numbered paragraph')) {
-    const ids = [...prompt.matchAll(/^\[(\w+)\] (.*)$/gm)];
+    const ids = [...prompt.matchAll(/^\[([a-z]+\d+)\] (.*)$/gm)];
     return {
       purpose: 'translate',
       text: ids.map(([, id, text]) => `[${id}] ${script.translations[text] ?? `«${text}»`}`).join('\n'),

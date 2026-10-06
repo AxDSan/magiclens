@@ -1,6 +1,6 @@
 import { clippingAncestors, intersect, isFixedContext, toRect, viewportRect } from '../geometry';
 import { imageAt } from '../targets';
-import { ICONS } from './icons';
+import { icon } from './icons';
 import type { UiRoot } from './root';
 
 /** The small lens button that appears on images under the pointer. */
@@ -29,7 +29,7 @@ export class HoverButton {
     this.el.className = 'hbtn';
     this.el.title = 'Read text in this image (MagicLens)';
     this.el.setAttribute('aria-label', 'Read text in this image');
-    this.el.innerHTML = ICONS.lens;
+    this.el.append(icon('lens'));
     root.container.appendChild(this.el);
 
     this.el.addEventListener('pointerenter', () => {

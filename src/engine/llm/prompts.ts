@@ -122,9 +122,8 @@ export function translatePrompt(blocks: OcrBlock[], target: string, extra: strin
     '',
     listing,
     '',
-    'Answer with exactly one line per paragraph, in the same order, formatted as',
-    '[id] translation',
-    'and nothing else.',
+    'Answer with exactly one line per paragraph, in the same order, starting with its id in',
+    `brackets (for example: [${blocks[0]?.id ?? 'b0'}] your translation) and nothing else.`,
     extra,
   ].join('\n');
 }

@@ -1,7 +1,7 @@
 const svg = (body: string) =>
-  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
 
-export const ICONS = {
+const ICON_SOURCES = {
   lens: svg(
     '<circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.6-4.6"/><path d="M8 9.5h5M8 12h3.2" stroke-width="1.6"/>',
   ),
@@ -20,3 +20,18 @@ export const ICONS = {
   send: svg('<path d="M12 19V5M5.5 11.5 12 5l6.5 6.5"/>'),
   selectAll: svg('<path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16"/><path d="M8 10h8M8 14h5"/>'),
 };
+
+export type IconName = keyof typeof ICON_SOURCES;
+
+const parsed = new Map<IconName, SVGElement>();
+
+/** A fresh SVG node for an icon, built without innerHTML (pages and stores flag that). */
+export function icon(name: IconName): SVGElement {
+  let template = parsed.get(name);
+  if (!template) {
+    const doc = new DOMParser().parseFromString(ICON_SOURCES[name], 'image/svg+xml');
+    template = document.importNode(doc.documentElement, true) as unknown as SVGElement;
+    parsed.set(name, template);
+  }
+  return template.cloneNode(true) as SVGElement;
+}

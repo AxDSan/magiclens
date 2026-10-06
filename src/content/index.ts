@@ -16,7 +16,14 @@ export async function boot(ctx: ContentScriptContext) {
   if (scope[FLAG]) return;
   scope[FLAG] = true;
 
+  // Listen before the first read so a change landing during boot is not lost.
+  let latest: Settings | null = null;
+  let onChange = (next: Settings) => {
+    latest = next;
+  };
+  const stopWatching = onSettingsChanged((next) => onChange(next));
   let settings: Settings = await getSettings();
+  if (latest) settings = latest;
   const root = new UiRoot(settings.reducedMotion);
   const lens = new Lens(root, settings);
   const picker = new Picker(root);
@@ -32,12 +39,12 @@ export async function boot(ctx: ContentScriptContext) {
   };
   apply(settings);
 
-  const stopWatching = onSettingsChanged((next) => {
+  onChange = (next) => {
     settings = next;
     lens.updateSettings(next);
     lens.refreshAi();
     apply(next);
-  });
+  };
 
   const pick = () => {
     hover.hide(true);

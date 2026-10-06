@@ -19,8 +19,8 @@ export class Picker {
     this.label.className = 'pick-label';
     this.box.append(this.label);
     this.hint.className = 'hint';
-    this.hint.innerHTML =
-      'Click an image to read it <kbd>Alt</kbd> any element <kbd>Esc</kbd> cancel';
+    const kbd = (key: string) => Object.assign(document.createElement('kbd'), { textContent: key });
+    this.hint.append('Click an image to read it', kbd('Alt'), 'any element', kbd('Esc'), 'cancel');
   }
 
   start(onPick: (target: Element) => void) {

@@ -1,6 +1,7 @@
+import { getSettings, providerReady } from '../../shared/settings';
 import type { Rect } from '../../shared/types';
 import { clamp } from '../../shared/util';
-import { ICONS } from './icons';
+import { icon, type IconName } from './icons';
 import { renderMarkdown } from './markdown';
 
 export interface PanelActions {
@@ -15,13 +16,13 @@ export interface PanelActions {
   openSettings(): void;
 }
 
-function button(icon: string, label: string, title: string, iconOnly = false): HTMLButtonElement {
+function button(name: IconName, label: string, title: string, iconOnly = false): HTMLButtonElement {
   const el = document.createElement('button');
   el.type = 'button';
   el.className = iconOnly ? 'btn icon' : 'btn';
   el.title = title;
   el.setAttribute('aria-label', title);
-  el.innerHTML = icon;
+  el.append(icon(name));
   if (!iconOnly) el.append(label);
   return el;
 }
@@ -46,14 +47,14 @@ export class Panel {
     bar.className = 'bar';
     this.meta.className = 'meta';
 
-    this.copyButton = button(ICONS.copy, 'Copy', 'Copy all text');
-    const selectButton = button(ICONS.selectAll, '', 'Select all text', true);
-    this.showButton = button(ICONS.text, '', 'Show recognized text on the image', true);
-    this.translateButton = button(ICONS.translate, 'Translate', 'Translate the text in place');
-    const explainButton = button(ICONS.sparkle, 'Explain', 'Explain this image');
-    const summaryButton = button(ICONS.summary, '', 'Summarize', true);
-    const askButton = button(ICONS.ask, '', 'Ask about this image', true);
-    const closeButton = button(ICONS.close, '', 'Close (Esc)', true);
+    this.copyButton = button('copy', 'Copy', 'Copy all text');
+    const selectButton = button('selectAll', '', 'Select all text', true);
+    this.showButton = button('text', '', 'Show recognized text on the image', true);
+    this.translateButton = button('translate', 'Translate', 'Translate the text in place');
+    const explainButton = button('sparkle', 'Explain', 'Explain this image');
+    const summaryButton = button('summary', '', 'Summarize', true);
+    const askButton = button('ask', '', 'Ask about this image', true);
+    const closeButton = button('close', '', 'Close (Esc)', true);
     this.showButton.setAttribute('aria-pressed', 'false');
     const sep = () => Object.assign(document.createElement('span'), { className: 'sep' });
 
@@ -86,7 +87,7 @@ export class Panel {
     send.type = 'submit';
     send.className = 'send';
     send.title = 'Ask';
-    send.innerHTML = ICONS.send;
+    send.append(icon('send'));
     this.askForm.append(this.askInput, send);
     card.append(this.out, this.askForm);
     inner.append(card);
@@ -100,11 +101,11 @@ export class Panel {
     this.showButton.addEventListener('click', () => {
       this.showButton.setAttribute('aria-pressed', String(this.actions.toggleShow()));
     });
-    this.translateButton.addEventListener('click', () => this.needsAi(() => this.actions.translate()));
-    explainButton.addEventListener('click', () => this.needsAi(() => this.actions.explain()));
-    summaryButton.addEventListener('click', () => this.needsAi(() => this.actions.summarize()));
+    this.translateButton.addEventListener('click', () => void this.needsAi(() => this.actions.translate()));
+    explainButton.addEventListener('click', () => void this.needsAi(() => this.actions.explain()));
+    summaryButton.addEventListener('click', () => void this.needsAi(() => this.actions.summarize()));
     askButton.addEventListener('click', () =>
-      this.needsAi(() => {
+      void this.needsAi(() => {
         this.open();
         this.askForm.hidden = false;
         this.askInput.focus();
@@ -122,15 +123,18 @@ export class Panel {
   }
 
   setMeta(text: string) {
-    this.meta.innerHTML = '<span class="dot"></span>';
-    this.meta.append(text);
+    const dot = document.createElement('span');
+    dot.className = 'dot';
+    this.meta.replaceChildren(dot, text);
   }
 
   setAiReady(ready: boolean) {
     this.aiReady = ready;
   }
 
-  private needsAi(run: () => void) {
+  private async needsAi(run: () => void) {
+    // Settings may have changed in another tab since this panel was created.
+    if (!this.aiReady) this.aiReady = providerReady(await getSettings());
     if (this.aiReady) return run();
     this.open();
     const notice = document.createElement('div');
@@ -143,10 +147,12 @@ export class Panel {
   }
 
   private flash(el: HTMLButtonElement, label: string) {
-    const original = el.innerHTML;
-    el.innerHTML = `<span class="done">${ICONS.check}</span>`;
-    el.append(label);
-    setTimeout(() => (el.innerHTML = original), 1300);
+    const original = [...el.childNodes];
+    const done = document.createElement('span');
+    done.className = 'done';
+    done.append(icon('check'));
+    el.replaceChildren(done, label);
+    setTimeout(() => el.replaceChildren(...original), 1300);
   }
 
   open() {

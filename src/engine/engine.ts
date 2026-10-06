@@ -293,7 +293,9 @@ export async function runAnalysis(job: AnalysisJob, settings: Settings, emit: Em
     });
     delta.cancel();
     if (translate) {
-      const translations = Object.fromEntries(parseTranslations(text));
+      const translations = Object.fromEntries(
+        parseTranslations(text, job.result.blocks.map((block) => block.id)),
+      );
       emit({ t: 'done', id, text: readableTranslation(text), translations });
     } else {
       emit({ t: 'done', id, text });

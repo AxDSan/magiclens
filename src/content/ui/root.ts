@@ -150,25 +150,33 @@ export class UiRoot {
     return this.overlays.find((o) => o.target === target && !o.isClosed);
   }
 
+  /** Positions `item` right away (no frame at 0,0), then keeps it in sync every frame. */
   track(item: Tracked) {
     this.tracked.add(item);
-    if (!this.frame) this.frame = requestAnimationFrame(this.tick);
+    this.updateItem(item, this.origin());
+    if (!this.frame && this.tracked.size) this.frame = requestAnimationFrame(this.tick);
+  }
+
+  private origin() {
+    const hostRect = this.host.getBoundingClientRect();
+    return { x: hostRect.left, y: hostRect.top };
+  }
+
+  private updateItem(item: Tracked, origin: { x: number; y: number }) {
+    let keep = false;
+    try {
+      keep = item.update(origin);
+    } catch (error) {
+      console.warn('[MagicLens] update failed', error);
+    }
+    if (!keep) this.tracked.delete(item);
   }
 
   private tick = () => {
     this.frame = 0;
     if (!this.tracked.size) return;
-    const hostRect = this.host.getBoundingClientRect();
-    const origin = { x: hostRect.left, y: hostRect.top };
-    for (const item of [...this.tracked]) {
-      let keep = false;
-      try {
-        keep = item.update(origin);
-      } catch (error) {
-        console.warn('[MagicLens] update failed', error);
-      }
-      if (!keep) this.tracked.delete(item);
-    }
+    const origin = this.origin();
+    for (const item of [...this.tracked]) this.updateItem(item, origin);
     if (this.tracked.size) this.frame = requestAnimationFrame(this.tick);
   };
 

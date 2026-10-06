@@ -66,12 +66,14 @@ export default defineConfig({
           browser_specific_settings: {
             gecko: {
               id: 'magiclens@magiclens.dev',
-              strict_min_version: '128.0',
+              // Built-in data-collection consent arrived in Firefox 140 (desktop) / 142 (Android).
+              strict_min_version: '140.0',
               data_collection_permissions: {
                 required: ['none'],
                 optional: ['websiteContent'],
               },
             },
+            gecko_android: { strict_min_version: '142.0' },
           },
         }
       : {}),
