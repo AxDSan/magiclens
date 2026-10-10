@@ -18,3 +18,9 @@ codedb.snapshot
 .env.*
 .DS_Store
 *.log
+
+# Downloaded OCR models (npm run fetch:ocr)
+.cache/
+
+# Generated store listing images (npm run store:assets)
+store/assets/

@@ -4,6 +4,7 @@ import { browser } from 'wxt/browser';
 import { createClient } from '../../engine/llm';
 import { parseOcrJson } from '../../engine/llm/parse';
 import { OCR_SYSTEM, ocrPrompt } from '../../engine/llm/prompts';
+import { SUPPORT_URL } from '../../shared/links';
 import { detectBoxFormat, PROVIDER_ORDER, PROVIDERS } from '../../shared/providers';
 import {
   type EngineChoice,
@@ -21,7 +22,7 @@ import { iou, makeTestImage } from './test-image';
 
 const ENGINES: { id: EngineChoice; title: string; text: string }[] = [
   { id: 'auto', title: 'Auto', text: 'Hybrid when an AI provider is connected, otherwise local OCR.' },
-  { id: 'local', title: 'Local OCR', text: 'Tesseract running in your browser. Private, offline, free.' },
+  { id: 'local', title: 'Local OCR', text: 'Runs in your browser with the OCR model chosen below. Private, offline, free.' },
   { id: 'hybrid', title: 'Hybrid', text: 'Local OCR finds exact positions; the AI corrects the text.' },
   { id: 'llm', title: 'AI vision', text: 'The model reads the image and places the text itself.' },
 ];
@@ -345,33 +346,51 @@ function Options() {
 
       <ProviderSection settings={settings} update={update} />
 
-      <Section title="Local OCR" text="Languages Tesseract should look for. English is built in; other languages download once (2–15 MB each) and are cached.">
-        <div class="chips">
-          {OCR_LANGUAGES.map(([code, label]) => {
-            const on = settings.ocrLangs.includes(code);
-            return (
-              <button
-                key={code}
-                class="chip"
-                aria-pressed={on}
-                onClick={() => {
-                  const next = on ? settings.ocrLangs.filter((l) => l !== code) : [...settings.ocrLangs, code];
-                  update({ ocrLangs: next.length ? next : ['eng'] });
-                }}
-              >
-                {label}
-              </button>
-            );
-          })}
-        </div>
+      <Section
+        title="Local OCR"
+        text={
+          settings.ocrModel === 'tesseract'
+            ? 'Languages Tesseract should look for. English is built in; other languages download once (2–15 MB each) and are cached.'
+            : 'PaddleOCR runs from models bundled with the extension. Nothing is downloaded.'
+        }
+      >
         <label class="field inline">
-          <span>Page layout</span>
-          <select value={settings.segmentation} onChange={(e) => update({ segmentation: e.currentTarget.value as Settings['segmentation'] })}>
-            <option value="auto">Automatic (documents, screenshots; retries sparse text)</option>
-            <option value="sparse">Sparse text (memes, signs, UI)</option>
-            <option value="block">Single block of text</option>
+          <span>OCR model</span>
+          <select value={settings.ocrModel} onChange={(e) => update({ ocrModel: e.currentTarget.value as Settings['ocrModel'] })}>
+            <option value="tesseract">Tesseract</option>
+            <option value="paddle">PaddleOCR PP-OCRv5 (mobile)</option>
           </select>
         </label>
+        {settings.ocrModel === 'tesseract' && (
+          <>
+            <div class="chips">
+              {OCR_LANGUAGES.map(([code, label]) => {
+                const on = settings.ocrLangs.includes(code);
+                return (
+                  <button
+                    key={code}
+                    class="chip"
+                    aria-pressed={on}
+                    onClick={() => {
+                      const next = on ? settings.ocrLangs.filter((l) => l !== code) : [...settings.ocrLangs, code];
+                      update({ ocrLangs: next.length ? next : ['eng'] });
+                    }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+            <label class="field inline">
+              <span>Page layout</span>
+              <select value={settings.segmentation} onChange={(e) => update({ segmentation: e.currentTarget.value as Settings['segmentation'] })}>
+                <option value="auto">Automatic (documents, screenshots; retries sparse text)</option>
+                <option value="sparse">Sparse text (memes, signs, UI)</option>
+                <option value="block">Single block of text</option>
+              </select>
+            </label>
+          </>
+        )}
       </Section>
 
       <Section title="Translation & answers">
@@ -429,6 +448,23 @@ function Options() {
           <li><b>Hybrid and AI</b> modes send the image (and recognized text) only to the provider you chose, only when you read an image.</li>
           <li>API keys are stored in this browser's local extension storage and are never synced.</li>
         </ul>
+      </Section>
+
+      <Section
+        title="About"
+        text={`Version ${browser.runtime.getManifest().version}. Updates arrive automatically through your browser's add-on store.`}
+      >
+        <p class="support">
+          MagicLens is free and has no ads or tracking. If it saves you time, you can support its
+          development.{' '}
+          <a class="btn" href={SUPPORT_URL} target="_blank" rel="noopener">
+            Support on Ko-fi
+          </a>
+        </p>
+        <p class="legal-links">
+          <a href="legal.html#privacy" target="_blank">Privacy policy</a>
+          <a href="legal.html#terms" target="_blank">Terms of use</a>
+        </p>
       </Section>
     </div>
   );

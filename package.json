@@ -2,6 +2,9 @@
   "name": "magiclens",
   "version": "0.1.0",
   "description": "Read, select, translate and analyze the text inside any image on the web, in place.",
+  "license": "Apache-2.0",
+  "homepage": "https://axdsan.github.io/magiclens/",
+  "repository": "github:AxDSan/magiclens",
   "private": true,
   "type": "module",
   "scripts": {
@@ -15,14 +18,19 @@
     "build:all": "npm run build:chrome && npm run build:edge && npm run build:firefox && npm run build:safari",
     "zip": "wxt zip",
     "zip:firefox": "wxt zip -b firefox",
-    "zip:all": "wxt zip -b chrome && wxt zip -b edge && wxt zip -b firefox",
+    "zip:all": "wxt zip -b chrome && wxt zip -b edge && wxt zip -b opera && wxt zip -b firefox",
     "typecheck": "tsc --noEmit",
     "lint:firefox": "wxt build -b firefox && web-ext lint --source-dir .output/firefox-mv3",
     "test": "vitest run",
-    "test:e2e": "wxt build -b chrome && playwright test",
+    "test:e2e": "npm run fetch:ocr && wxt build -b chrome && playwright test",
     "postinstall": "wxt prepare",
     "test:firefox": "wxt build -b firefox && node tests/firefox/smoke.mjs",
-    "test:all": "npm run typecheck && npm test && npm run test:e2e && npm run test:firefox"
+    "test:all": "npm run typecheck && npm test && npm run test:e2e && npm run test:firefox",
+    "fetch:ocr": "node scripts/fetch-ocr-models.mjs",
+    "store:assets": "wxt build -b chrome && node scripts/store-assets.mjs",
+    "submit:firefox:first": "wxt zip -b firefox && web-ext sign --source-dir .output/firefox-mv3 --channel listed --amo-metadata store/amo-metadata.json --upload-source-code .output/magiclens-$npm_package_version-sources.zip --approval-timeout 0",
+    "submit": "wxt submit --chrome-zip .output/magiclens-$npm_package_version-chrome.zip --edge-zip .output/magiclens-$npm_package_version-edge.zip --firefox-zip .output/magiclens-$npm_package_version-firefox.zip --firefox-sources-zip .output/magiclens-$npm_package_version-sources.zip --firefox-amo-metadata-file store/amo-metadata.json",
+    "submit:dry": "npm run submit -- --dry-run"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
@@ -37,6 +45,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.131.0",
     "@tesseract.js-data/eng": "^1.0.0",
+    "onnxruntime-web": "^1.30.0",
     "preact": "^10.29.8",
     "tesseract.js": "^7.0.0"
   }

@@ -14,9 +14,10 @@ it as if it were normal page text.
   exact width of the word in the image. Copy gives clean text with spaces and line breaks.
 - **Analysis**: explain, summarize, ask questions about the image, or translate it, with the
   translation painted over the original paragraphs, like a printed page in your language.
-- **Smooth**: the processing effects (spectrum ring, aurora edge glow, light sweep,
-  sparkles) animate only `transform` and `opacity`, so they run on the compositor and stay
-  fluid while the page is busy. The page's main thread sees no long tasks during a read.
+- **Smooth**: the processing effects (a faint spectrum ring with a highlight running clockwise
+  around the frame, a soft inner glow, a light sweep, and squares pulsing outward in Game of
+  Life generations) animate only `transform` and `opacity`, so they run on the compositor and
+  stay fluid while the page is busy. The page's main thread sees no long tasks during a read.
 
 Chrome, Edge, Brave, Opera, Vivaldi, Arc and other Chromium browsers, Firefox, and Safari
 (through Apple's converter) are supported from one code base (Manifest V3, built with
@@ -30,6 +31,12 @@ Requires Node.js 20+.
 npm install
 ```
 
+Then download the PaddleOCR models once. Every build and `npm run dev` reads them from `.cache/`:
+
+```bash
+npm run fetch:ocr
+```
+
 | Browser | Build | Load it |
 | --- | --- | --- |
 | Chrome, Brave, Vivaldi, Arc | `npm run build:chrome` | `chrome://extensions` → Developer mode → **Load unpacked** → `.output/chrome-mv3` |
@@ -38,8 +45,8 @@ npm install
 | Firefox (140+) | `npm run build:firefox` | `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on** → `.output/firefox-mv3/manifest.json` |
 | Safari (macOS) | `npm run build:safari` | `xcrun safari-web-extension-converter .output/safari-mv3`, then build and run the generated Xcode project |
 
-Store packages: `npm run zip` (Chrome Web Store / Edge Add-ons) and `npm run zip:firefox`
-(AMO; also writes the sources archive reviewers ask for).
+Store packages: `npm run zip:all` writes the Chrome, Edge, Opera and Firefox zips plus the
+sources archive AMO reviewers ask for. Publishing is described under [Releasing](#releasing).
 
 Development with live reload: `npm run dev` (Chrome) or `npm run dev:firefox`.
 
@@ -64,7 +71,7 @@ can check it), **Translate**, **Explain**, **Summarize** and **Ask**.
 
 | Engine | What happens | Needs |
 | --- | --- | --- |
-| **Local OCR** | Tesseract (WebAssembly) finds and reads every word. English ships with the extension; 29 other languages download once (2–15 MB each) and are cached. | Nothing |
+| **Local OCR** | Tesseract (WebAssembly) or PaddleOCR PP-OCRv5 mobile (ONNX Runtime Web) finds and reads every word. Choose one in the options. English ships with the extension for Tesseract; 29 other languages download once (2–15 MB each) and are cached. PaddleOCR's models are bundled, so it downloads nothing. | Nothing |
 | **Hybrid** (default when a provider is set) | Local OCR finds the exact word positions; the model re-reads every line from the image and corrects the text, and adds lines OCR missed. | AI provider |
 | **AI vision** | The model reads the image and returns line boxes itself. | AI provider |
 
@@ -114,6 +121,10 @@ content script ──port──▶ background ──▶ engine host ──▶ Te
   CSS variables (frame width, height, aspect), so a resize updates three values and keeps the
   selection. Stretched spaces between words keep the selection highlight continuous, and a
   copy handler serializes words with real spaces and line breaks.
+- **Updates**: the stores deliver them; the browser downloads them on its own schedule (the
+  extension never fetches code). The background applies a downloaded update as soon as no read
+  or answer is in flight, and after an install or update it injects the content script into
+  tabs that were already open, so their lens button keeps working without a page reload.
 
 ## Privacy
 
@@ -121,6 +132,13 @@ content script ──port──▶ background ──▶ engine host ──▶ Te
 - Hybrid and AI modes send the image, and the recognized text, only to the provider you
   configured, only when you read an image or ask something.
 - On Firefox, choosing a cloud provider asks for the browser's data-collection consent.
+
+Full text: [PRIVACY.md](PRIVACY.md) and [TERMS.md](TERMS.md). The extension ships the same
+files (Settings → About) on its `legal.html` page.
+
+## Support
+
+MagicLens is free. If it saves you time: [ko-fi.com/axdsan](https://ko-fi.com/axdsan).
 
 ## Tests
 
@@ -134,9 +152,10 @@ npm run test:firefox  # builds Firefox, runs a headless Firefox smoke test (WebD
 The end-to-end suites render fixture images with known text at known pixel positions and
 assert that every overlay word covers its ground-truth glyphs (horizontal IoU ≥ 0.6 and
 vertical containment), across same-origin, cross-origin, `object-fit: contain/cover`,
-canvas-by-screenshot, dark images, clipboard output, the keyboard trigger, and the AI paths
-against a mock OpenAI-compatible server (including an Ollama-like one that refuses extension
-origins). They also check that the page's main thread sees no long tasks during a read.
+canvas-by-screenshot, dark images, clipboard output, the keyboard trigger, a tab that stays
+open across an extension update, and the AI paths against a mock OpenAI-compatible server
+(including an Ollama-like one that refuses extension origins). They also check that the
+page's main thread sees no long tasks during a read.
 
 `VISUAL_DIR=/some/dir npx playwright test visual` saves screenshots of the animation, the
 panel and the options page for a human look.
@@ -144,6 +163,26 @@ panel and the options page for a human look.
 Playwright needs its own Chromium (`npx playwright install chromium`): branded Chrome no
 longer loads unpacked extensions from the command line. The Firefox test uses the system
 Firefox (`FIREFOX_BIN` overrides the path).
+
+## Releasing
+
+The stores deliver updates; browsers install them on their own, and MagicLens applies a
+downloaded update as soon as no read is running. To ship a version:
+
+1. Bump `version` in `package.json`, commit, and push a matching tag (`v0.2.0`).
+2. The `Release` workflow tests, zips, attaches the packages to a GitHub release and submits
+   them to the Chrome Web Store (API v2), Edge Add-ons and AMO with `npm run submit`.
+   Secrets are listed in `store/submit.env.example`; the same file, saved as `.env.submit`,
+   drives `npm run zip:all && npm run submit` locally (`npm run submit:dry` checks the keys).
+3. Upload the Opera zip from the release by hand: Opera has no supported publishing API.
+
+The store APIs only update listings that exist. The first version of each listing is created
+by hand from `store/listing.md` (text, permission justifications, privacy answers); Firefox's
+can be created from the command line with `npm run submit:firefox:first`. `npm run
+store:assets` renders the screenshots, promo tiles and logo into `store/assets/`.
+
+The site at https://axdsan.github.io/magiclens/ is GitHub Pages serving this README,
+[PRIVACY.md](PRIVACY.md) at `/privacy/` and [TERMS.md](TERMS.md) at `/terms/`.
 
 ## Known limits
 
@@ -153,8 +192,12 @@ Firefox (`FIREFOX_BIN` overrides the path).
   into view first. Elements inside cross-origin iframes can be read when they are images, not
   by screenshot.
 - Vertical CJK text works best with an AI engine.
+- PaddleOCR's models and runtime add about 36 MB to every build (measured: 35.7 MB of a 51.3 MB
+  build). Its sessions stay loaded for the lifetime of the page; Tesseract's worker is released
+  when idle.
+- PaddleOCR drops lines it reads with confidence below 0.5.
 - `web-ext lint` reports warnings that come from dependencies: regenerator-runtime's
   unreachable `Function()` fallback inside tesseract.js, and Preact's `innerHTML` support.
 
-Ideas not built yet: an in-browser vision model (Florence-2 on WebGPU), Chrome's built-in
-Prompt and Translator APIs, and a PaddleOCR (ONNX) engine for scene text.
+Ideas not built yet: an in-browser vision model (Florence-2 on WebGPU) and Chrome's built-in
+Prompt and Translator APIs.

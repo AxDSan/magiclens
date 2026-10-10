@@ -1,0 +1,19 @@
+{
+  "categories": {
+    "firefox": ["language-support", "photos-music-videos"],
+    "android": ["language-support", "photos-music-videos"]
+  },
+  "summary": {
+    "en-US": "Read, select, translate and explain the text inside any image, right where it appears. Local OCR works offline; AI features use your own key or a local model."
+  },
+  "description": {
+    "en-US": "MagicLens reads the text inside images on any web page and lays it back over the image, exactly where the original letters are, so you can select it, copy it, translate it or ask about it like normal page text.\n\n**How to use it**\n- Hover an image and click the lens button, or right-click it and choose *Read text in image*.\n- Alt+Shift+L reads the main image on the page; Alt+Shift+K lets you pick any element.\n- Drag to select, double-click a word, or copy everything with clean spaces and line breaks.\n\n**Local first**\n- Tesseract and PaddleOCR run entirely in your browser. Nothing leaves your device and no account is needed.\n- English and PaddleOCR are built in; 29 more Tesseract languages download once when you turn them on.\n\n**Optional AI, your own key**\n- Translate the text in place, painted over the original like a printed page in your language.\n- Explain, summarize or ask questions about the image.\n- Hybrid mode lets a vision model correct the OCR while keeping exact word positions.\n- Works with OpenAI, Claude, Gemini, OpenRouter, Groq, Mistral, xAI, Together, or a local model through Ollama or LM Studio. Images go only to the provider you choose, only when you ask.\n\n**Privacy**\nThe developer collects nothing: no server, no account, no analytics, no ads. Full policy: https://axdsan.github.io/magiclens/privacy/\n\nMagicLens is free and open source (Apache-2.0)."
+  },
+  "homepage": { "en-US": "https://axdsan.github.io/magiclens/" },
+  "contributions_url": "https://ko-fi.com/axdsan",
+  "requires_payment": false,
+  "version": {
+    "license": "Apache-2.0",
+    "approval_notes": "Build from the attached sources (also at https://github.com/AxDSan/magiclens):\n1. Node.js 20 or newer.\n2. npm ci\n3. npm run fetch:ocr   (downloads the PaddleOCR models pinned in scripts/paddle-files.mjs and verifies their SHA-256)\n4. npx wxt zip -b firefox\nThe add-on is .output/magiclens-<version>-firefox.zip.\n\nThird-party files copied unmodified from npm packages (see wxt.config.ts):\n- ocr/worker.min.js: tesseract.js@7 dist/worker.min.js\n- ocr/core/*.wasm.js: tesseract.js-core\n- ocr/lang/eng.traineddata.gz: @tesseract.js-data/eng 4.0.0_best_int\n- ocr/ort/*: onnxruntime-web dist\n- ocr/paddle/*: PaddleOCR PP-OCRv5 mobile models (Apache-2.0), pinned by commit and SHA-256\n\nNetwork use: images go only to the AI provider the user configures with their own key; non-English Tesseract language data is fetched from cdn.jsdelivr.net when the user enables that language. No telemetry.\n\nTo test without a key: hover any image and click the lens button (local OCR). The web-ext lint warnings come from tesseract.js (regenerator-runtime Function fallback) and Preact (innerHTML support)."
+  }
+}

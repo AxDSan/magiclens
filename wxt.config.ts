@@ -1,10 +1,24 @@
+import { existsSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import preact from '@preact/preset-vite';
 import { defineConfig } from 'wxt';
+import { PADDLE_FILES } from './scripts/paddle-files.mjs';
 
 const require = createRequire(import.meta.url);
 const pkgDir = (name: string) => dirname(require.resolve(`${name}/package.json`));
+
+// onnxruntime-web does not export ./package.json, so walk up from its entry to the package root.
+const packageRoot = (name: string) => {
+  let dir = dirname(require.resolve(name));
+  while (!existsSync(join(dir, 'package.json')) || JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')).name !== name) {
+    const parent = dirname(dir);
+    if (parent === dir) throw new Error(`Package root for ${name} not found`);
+    dir = parent;
+  }
+  return dir;
+};
 
 // Tesseract runs from files shipped inside the extension: MV3 forbids remote code, and
 // bundling English keeps the default engine fully offline.
@@ -25,6 +39,25 @@ const tesseractAssets = () => {
   ];
 };
 
+// PaddleOCR models are fetched by `npm run fetch:ocr` (pinned and checksummed), not vendored.
+// The ONNX Runtime WASM loader is bundled from the locked npm package.
+const paddleAssets = () => {
+  const cache = join(dirname(fileURLToPath(import.meta.url)), '.cache', 'paddleocr');
+  const ort = packageRoot('onnxruntime-web');
+  const models = PADDLE_FILES.map((file) => {
+    const absoluteSrc = join(cache, file.name);
+    if (!existsSync(absoluteSrc)) {
+      throw new Error(`Missing ${absoluteSrc}. Run "npm run fetch:ocr" before building.`);
+    }
+    return { absoluteSrc, relativeDest: `ocr/paddle/${file.name}` };
+  });
+  return [
+    ...models,
+    { absoluteSrc: join(ort, 'dist/ort-wasm-simd-threaded.wasm'), relativeDest: 'ocr/ort/ort-wasm-simd-threaded.wasm' },
+    { absoluteSrc: join(ort, 'dist/ort-wasm-simd-threaded.mjs'), relativeDest: 'ocr/ort/ort-wasm-simd-threaded.mjs' },
+  ];
+};
+
 const chromium = new Set(['chrome', 'edge', 'opera', 'brave', 'chromium']);
 
 export default defineConfig({
@@ -39,6 +72,7 @@ export default defineConfig({
     name: 'MagicLens',
     description:
       'Read, select, translate and explain the text inside any image, right where it appears.',
+    homepage_url: 'https://axdsan.github.io/magiclens/',
     permissions: [
       'storage',
       'contextMenus',
@@ -80,8 +114,14 @@ export default defineConfig({
       : {}),
   }),
   zip: {
-    // Keep local tooling and test output out of the archive AMO reviewers download.
-    excludeSources: ['codedb.snapshot', '.codegraph/**', 'test-results/**', 'tests/e2e/.fixtures/**'],
+    // Keep local tooling, test output and store images out of the archive AMO reviewers download.
+    excludeSources: [
+      'codedb.snapshot',
+      '.codegraph/**',
+      'test-results/**',
+      'tests/e2e/.fixtures/**',
+      'store/assets/**',
+    ],
   },
   hooks: {
     'entrypoints:resolved': (wxt, entrypoints) => {
@@ -93,7 +133,7 @@ export default defineConfig({
       if (index >= 0) entrypoints.splice(index, 1);
     },
     'build:publicAssets': (_wxt, files) => {
-      files.push(...tesseractAssets());
+      files.push(...tesseractAssets(), ...paddleAssets());
     },
     'build:manifestGenerated': (wxt, manifest) => {
       // Safari has no offscreen documents, and its service workers cannot spawn the

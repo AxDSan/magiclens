@@ -9,10 +9,12 @@ export interface ProviderConfig {
 
 export type EngineChoice = 'auto' | 'local' | 'llm' | 'hybrid';
 export type PageSegmentation = 'auto' | 'sparse' | 'block';
+export type OcrModel = 'tesseract' | 'paddle';
 
 export interface Settings {
   engine: EngineChoice;
   ocrLangs: string[];
+  ocrModel: OcrModel;
   segmentation: PageSegmentation;
   provider: ProviderId;
   providers: Record<ProviderId, ProviderConfig>;
@@ -28,6 +30,7 @@ export interface Settings {
 export const DEFAULT_SETTINGS: Settings = {
   engine: 'auto',
   ocrLangs: ['eng'],
+  ocrModel: 'tesseract',
   segmentation: 'auto',
   provider: 'anthropic',
   providers: Object.fromEntries(

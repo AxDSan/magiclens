@@ -1,9 +1,9 @@
 import { createWorker, OEM, PSM, type Worker } from 'tesseract.js';
-import { browser } from 'wxt/browser';
 import type { PageSegmentation } from '../../shared/settings';
 import type { NBox, OcrBlock, OcrLine, OcrWord, ProgressInfo } from '../../shared/types';
 import { clamp, CodedError } from '../../shared/util';
 import { type Raster, resample } from '../image';
+import { assetUrl, lineIsNoise } from './common';
 
 type Progress = (info: ProgressInfo) => void;
 
@@ -53,9 +53,6 @@ function onLog(message: { status: string; progress: number }) {
   }
 }
 
-// Files added by the build hook in wxt.config.ts are not in WXT's typed public paths.
-const assetUrl = (path: string) => (browser.runtime.getURL as (p: string) => string)(path);
-
 async function getWorker(langs: string[]): Promise<Worker> {
   const key = langs.join('+');
   if (workerReady && workerLangs === key) return workerReady;
@@ -104,13 +101,6 @@ function wordIsNoise(word: TessWord): boolean {
   if (word.confidence < 30) return true;
   if (alnum === 0 && word.confidence < 70) return true;
   return alnum / text.length < 0.34 && word.confidence < 55;
-}
-
-function lineIsNoise(line: OcrLine): boolean {
-  const alnum = (line.text.match(/[\p{L}\p{N}]/gu) ?? []).length;
-  if (alnum === 0) return true;
-  // Isolated single glyphs are usually texture, not text.
-  return line.text.replace(/\s/g, '').length === 1 && line.conf < 0.8;
 }
 
 const union = (boxes: TessBbox[]): TessBbox => ({

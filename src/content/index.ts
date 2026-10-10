@@ -79,11 +79,21 @@ export async function boot(ctx: ContentScriptContext) {
 
   ctx.onInvalidated(() => {
     scope[FLAG] = false;
-    browser.runtime.onMessage.removeListener(onMessage);
-    stopWatching();
+    // UI first: once an update has orphaned this script, extension API calls throw.
     picker.stop();
     hover.destroy();
     root.destroy();
-    engineClient.disconnect();
+    const releases = [
+      () => browser.runtime.onMessage.removeListener(onMessage),
+      stopWatching,
+      () => engineClient.disconnect(),
+    ];
+    for (const release of releases) {
+      try {
+        release();
+      } catch {
+        // The extension context is already gone; nothing is left to release.
+      }
+    }
   });
 }

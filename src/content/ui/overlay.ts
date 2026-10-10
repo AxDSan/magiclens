@@ -2,6 +2,7 @@ import type { OcrResult, ProgressInfo, Rect } from '../../shared/types';
 import { clamp } from '../../shared/util';
 import { clippingAncestors, intersect, isFixedContext, toRect, viewportRect } from '../geometry';
 import type { FrameMap, Mapper } from '../targets';
+import { buildCells, Comet } from './effects';
 import { Panel, type PanelActions } from './panel';
 import { buildTextLayer, fontMetrics, type WordRef } from './textlayer';
 
@@ -56,6 +57,7 @@ export class Overlay {
   private closed = false;
   private visibleClip: Rect | null = null;
   private timers: ReturnType<typeof setTimeout>[] = [];
+  private comets: Comet[];
 
   constructor(
     readonly target: Element,
@@ -73,35 +75,21 @@ export class Overlay {
     this.txt.setAttribute('role', 'document');
     this.txt.setAttribute('aria-label', 'Text recognized in the image');
 
-    // Effects: inner aurora edge, light beam, sparkles.
+    // Effects: inner aurora edge, light beam, squares pulsing outward from the centre, and a
+    // highlight running clockwise around the frame over a faint spectrum ring.
     const edge = el('div', 'edge', this.fx);
     el('div', 'spin', edge);
     el('div', 'beam', this.fx);
-    this.spawnSparks(el('div', 'sparks', this.fx));
+    const rect = this.target.getBoundingClientRect();
+    buildCells(el('div', 'cells', this.fx), Math.max(1, rect.width), Math.max(1, rect.height));
     el('div', 'spin', this.ring);
     el('div', 'spin', this.bloom);
+    this.comets = [this.ring, this.bloom].map((host) => new Comet(el('div', 'comet', host)));
 
     const orb = el('span', 'orb');
     this.progressBar.append(document.createElement('i'));
     this.status.append(orb, this.label, this.pct, this.progressBar);
     this.label.textContent = 'Reading';
-  }
-
-  private spawnSparks(container: HTMLElement) {
-    const rect = this.target.getBoundingClientRect();
-    const count = Math.round(clamp((rect.width * rect.height) / 7000, 10, 36));
-    const small = Math.min(rect.width, rect.height) < 160;
-    for (let i = 0; i < count; i++) {
-      const spark = el('i', 'spark', container);
-      const size = (small ? 3 : 4) + Math.random() * (small ? 3 : 5);
-      const drift = (small ? 14 : 34) * (0.4 + Math.random());
-      const angle = Math.random() * Math.PI * 2;
-      spark.style.cssText =
-        `--x:${(4 + Math.random() * 92).toFixed(1)}%;--y:${(4 + Math.random() * 92).toFixed(1)}%;` +
-        `--s:${size.toFixed(1)}px;--t:${(1.7 + Math.random() * 1.9).toFixed(2)}s;` +
-        `--delay:${(-Math.random() * 3.4).toFixed(2)}s;` +
-        `--dx:${(Math.cos(angle) * drift).toFixed(1)}px;--dy:${(Math.sin(angle) * drift).toFixed(1)}px`;
-    }
   }
 
   get isClosed() {
@@ -118,6 +106,9 @@ export class Overlay {
   private setState(state: OverlayState) {
     this.state = state;
     this.el.dataset.state = state;
+    // Once the effects have faded out, stop their animations instead of running them unseen.
+    this.el.removeAttribute('data-idle');
+    if (state === 'ready') this.later(() => this.state === 'ready' && this.el.setAttribute('data-idle', ''), 1000);
   }
 
   setLabel(text: string) {
@@ -180,7 +171,7 @@ export class Overlay {
 
   private describe(result: OcrResult) {
     const lines = result.blocks.reduce((n, b) => n + b.lines.length, 0);
-    const engine = result.engine === 'local' ? 'Local OCR' : result.model;
+    const engine = result.model;
     return `${lines} line${lines === 1 ? '' : 's'} · ${engine}`;
   }
 
@@ -337,7 +328,7 @@ export class Overlay {
     const radius = getComputedStyle(this.target).borderRadius || '0px';
     s.setProperty('--r', radius.split(' ')[0]);
     s.setProperty('--diag', `${Math.ceil(Math.hypot(clip.w, clip.h) + 8)}px`);
-    s.setProperty('--edge', `${Math.round(clamp(Math.min(clip.w, clip.h) * 0.09, 8, 34))}px`);
+    s.setProperty('--edge', `${Math.round(clamp(Math.min(clip.w, clip.h) * 0.06, 6, 22))}px`);
     s.setProperty('--bloom', `${Math.round(clamp(Math.min(clip.w, clip.h) * 0.05, 6, 16))}px`);
 
     const place = (node: HTMLElement, r: Rect) => {
@@ -353,6 +344,8 @@ export class Overlay {
     this.frame.style.setProperty('--ar', String(frame.w / Math.max(frame.h, 1)));
     place(this.ring, { x: clip.x - 2, y: clip.y - 2, w: clip.w + 4, h: clip.h + 4 });
     place(this.bloom, { x: clip.x - 4, y: clip.y - 4, w: clip.w + 8, h: clip.h + 8 });
+    this.comets[0].resize(clip.w + 4, clip.h + 4);
+    this.comets[1].resize(clip.w + 8, clip.h + 8);
 
     // Status pill inside the image when it fits, otherwise just below it.
     const inside = clip.h >= 92 && clip.w >= 180;

@@ -1,6 +1,7 @@
 import { render } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import { browser } from 'wxt/browser';
+import { SUPPORT_URL } from '../../shared/links';
 import type { TriggerMode } from '../../shared/messages';
 import { PROVIDERS } from '../../shared/providers';
 import { type EngineChoice, getSettings, providerReady, saveSettings, type Settings } from '../../shared/settings';
@@ -109,7 +110,12 @@ function Popup() {
         </div>
       </section>
       <footer>
-        Tip: hover any image and click the <b>lens</b> button, or right-click → <i>Read text in image</i>.
+        <p>
+          Tip: hover any image and click the <b>lens</b> button, or right-click → <i>Read text in image</i>.
+        </p>
+        <a class="support" href={SUPPORT_URL} target="_blank" rel="noopener">
+          Support MagicLens on Ko-fi
+        </a>
       </footer>
     </main>
   );

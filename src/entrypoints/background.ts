@@ -10,6 +10,7 @@ import {
 import { allowLocalModelServers } from '../shared/local-models';
 import { getSettings, onSettingsChanged } from '../shared/settings';
 import { triggerInTab } from '../shared/trigger';
+import { createUpdateGate, injectIntoOpenTabs } from '../background/updates';
 import { errorMessage } from '../shared/util';
 
 const TERMINAL = new Set<EngineEvent['t']>(['result', 'error', 'done']);
@@ -88,6 +89,16 @@ function createTransport(deliver: (event: EngineEvent) => void): EngineTransport
 
 export default defineBackground(() => {
   const routes = new Map<string, Browser.runtime.Port>();
+  const updates = createUpdateGate(
+    () => routes.size > 0,
+    () => browser.runtime.reload(),
+  );
+  browser.runtime.onUpdateAvailable.addListener(() => updates.available());
+
+  const release = (id: string) => {
+    routes.delete(id);
+    updates.settled();
+  };
 
   const deliver = (event: EngineEvent) => {
     const port = routes.get(event.id);
@@ -95,10 +106,10 @@ export default defineBackground(() => {
     try {
       port.postMessage(event);
     } catch {
-      routes.delete(event.id);
+      release(event.id);
       return;
     }
-    if (TERMINAL.has(event.t)) routes.delete(event.id);
+    if (TERMINAL.has(event.t)) release(event.id);
   };
 
   const engine = createTransport(deliver);
@@ -167,8 +178,8 @@ export default defineBackground(() => {
           break;
         }
         case 'cancel':
-          routes.delete(message.id);
           engine.send({ type: 'cancel', id: message.id });
+          release(message.id);
           break;
         case 'open-options':
           await browser.runtime.openOptionsPage();
@@ -182,8 +193,8 @@ export default defineBackground(() => {
     port.onDisconnect.addListener(() => {
       for (const id of owned) {
         if (routes.get(id) === port) {
-          routes.delete(id);
           engine.send({ type: 'cancel', id });
+          release(id);
         }
       }
     });
@@ -201,6 +212,9 @@ export default defineBackground(() => {
       title: 'Read text here with MagicLens',
       contexts: ['page', 'frame', 'link', 'video', 'selection'],
     });
+    if (reason === 'install' || reason === 'update') {
+      void injectIntoOpenTabs().catch((error) => console.warn('[MagicLens] inject', error));
+    }
     if (reason === 'install') {
       await browser.tabs.create({ url: browser.runtime.getURL('/options.html#welcome') });
     }

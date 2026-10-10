@@ -79,16 +79,16 @@ export const STYLES = /* css */ `
   background: linear-gradient(
     180deg,
     rgba(110, 150, 255, 0) 38%,
-    rgba(110, 150, 255, 0.1) 44%,
-    rgba(190, 210, 255, 0.34) 49.4%,
-    rgba(255, 255, 255, 0.72) 50%,
-    rgba(215, 180, 255, 0.34) 50.6%,
-    rgba(170, 120, 255, 0.1) 56%,
+    rgba(110, 150, 255, 0.06) 44%,
+    rgba(190, 210, 255, 0.22) 49.4%,
+    rgba(255, 255, 255, 0.46) 50%,
+    rgba(215, 180, 255, 0.22) 50.6%,
+    rgba(170, 120, 255, 0.06) 56%,
     rgba(170, 120, 255, 0) 62%
   );
   mix-blend-mode: screen;
   transform: translate3d(0, -62%, 0);
-  animation: ml-beam 2.6s cubic-bezier(0.6, 0.05, 0.3, 1) infinite;
+  animation: ml-beam 3.2s cubic-bezier(0.45, 0.05, 0.35, 1) infinite;
   will-change: transform;
 }
 @keyframes ml-beam {
@@ -96,14 +96,14 @@ export const STYLES = /* css */ `
   100% { transform: translate3d(0, 62%, 0); }
 }
 
-/* Iridescent glow hugging the inner edges, rotating like a slow aurora. */
+/* Iridescent glow hugging the inner edges, turning slowly clockwise. */
 .edge {
   position: absolute;
   inset: 0;
   overflow: hidden;
   border-radius: var(--r);
   mix-blend-mode: screen;
-  opacity: 0.95;
+  opacity: 0.24;
   -webkit-mask:
     linear-gradient(90deg, #000, transparent var(--edge), transparent calc(100% - var(--edge)), #000),
     linear-gradient(180deg, #000, transparent var(--edge), transparent calc(100% - var(--edge)), #000);
@@ -119,13 +119,14 @@ export const STYLES = /* css */ `
   height: var(--diag);
   margin: calc(var(--diag) / -2) 0 0 calc(var(--diag) / -2);
   background: var(--spectrum);
-  animation: ml-spin 3.2s linear infinite;
+  animation: ml-spin 9s linear infinite;
   will-change: transform;
 }
-.edge .spin { animation-duration: 5.5s; animation-direction: reverse; }
+.edge .spin { animation-duration: 12s; }
 @keyframes ml-spin { to { transform: rotate(1turn); } }
 
-/* Crisp spectrum ring around the element, plus a soft bloom outside it. */
+/* Faint spectrum ring around the element and a soft bloom outside it, each carrying a
+   highlight that runs clockwise around the frame (see Comet). */
 .ring, .bloom {
   position: absolute;
   overflow: hidden;
@@ -139,11 +140,12 @@ export const STYLES = /* css */ `
   -webkit-mask-composite: xor;
   mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
 }
+.ring .spin { opacity: 0.3; }
+.bloom .spin { opacity: 0.2; }
 .bloom-wrap {
   position: absolute;
   inset: 0;
   filter: blur(var(--bloom));
-  opacity: 0.75;
 }
 .bloom {
   padding: 5px;
@@ -159,29 +161,56 @@ export const STYLES = /* css */ `
 .ov[data-state='ready'] .bloom,
 .ov[data-state='error'] .bloom { opacity: 0; transform: scale(1.025); }
 .ov[data-state='error'] .ring { opacity: 1; }
-.ov[data-state='error'] .spin { background: conic-gradient(from 0deg, #ff4f6d, #ff9f4f, #ff4f6d); }
+.ov[data-state='error'] .spin { opacity: 1; background: conic-gradient(from 0deg, #ff4f6d, #ff9f4f, #ff4f6d); }
+.ov[data-state='error'] .comet { display: none; }
 
-/* Sparkles drifting over the image while it is being read. */
-.sparks { position: absolute; inset: 0; }
-.spark {
+.comet { position: absolute; inset: 0; }
+.comet .side {
   position: absolute;
-  left: var(--x);
-  top: var(--y);
-  width: var(--s);
-  height: var(--s);
-  margin: calc(var(--s) / -2) 0 0 calc(var(--s) / -2);
-  border-radius: 50%;
-  background: radial-gradient(circle, #fff 0 35%, rgba(190, 210, 255, 0.85) 45%, rgba(150, 120, 255, 0) 72%);
+  height: 12px;
+  overflow: hidden;
+  transform-origin: 0 0;
+}
+.comet .tail {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: linear-gradient(
+      90deg,
+      rgba(79, 140, 255, 0) calc(100% - var(--tail)),
+      rgba(108, 130, 255, 0.35) calc(100% - var(--tail) * 0.6),
+      rgba(176, 102, 255, 0.7) calc(100% - var(--tail) * 0.3),
+      rgba(255, 112, 190, 0.92) calc(100% - var(--tail) * 0.08),
+      #fff 100%
+    )
+    0 0 / var(--lap) 100% repeat-x;
+  will-change: transform;
+}
+
+/* Squares pulsing outward from the centre in rings (see buildCells). Pulses alternate between
+   two Game of Life generations, each crossing the element in about a second. */
+.cells { position: absolute; inset: 0; opacity: 0.7; }
+.cell-band {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
   opacity: 0;
-  animation: ml-twinkle var(--t) ease-in-out var(--delay) infinite;
+  animation: ml-cells 2.6s cubic-bezier(0.35, 0, 0.25, 1) infinite;
+  animation-delay: calc(var(--band) * 0.17s + var(--gen) * 1.3s);
   will-change: transform, opacity;
 }
-@keyframes ml-twinkle {
-  0% { opacity: 0; transform: translate3d(0, 0, 0) scale(0.2); }
-  35% { opacity: 1; transform: translate3d(calc(var(--dx) * 0.35), calc(var(--dy) * 0.35), 0) scale(1); }
-  70% { opacity: 0.7; }
-  100% { opacity: 0; transform: translate3d(var(--dx), var(--dy), 0) scale(0.3); }
+@keyframes ml-cells {
+  0% { opacity: 0; transform: scale(0.985); }
+  9% { opacity: 1; }
+  30% { opacity: 0; transform: scale(1.012); }
+  100% { opacity: 0; transform: scale(1.012); }
 }
+
+/* Faded-out effects stop animating (see Overlay.setState). */
+.ov[data-idle] .fx,
+.ov[data-idle] .bloom-wrap,
+.ov[data-idle] .ring { display: none; }
 
 /* One bright flash when the result lands. */
 .flash {
@@ -689,7 +718,8 @@ export const STYLES = /* css */ `
 
 /* ───────────────────────── reduced motion ───────────────────────── */
 .root.reduced .beam,
-.root.reduced .sparks,
+.root.reduced .cells,
+.root.reduced .comet,
 .root.reduced .flash,
 .root.reduced .hl::after { display: none; }
 .root.reduced .spin,

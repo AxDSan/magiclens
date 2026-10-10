@@ -28,6 +28,7 @@ import {
   TRANSLATE_SYSTEM,
   translatePrompt,
 } from './llm/prompts';
+import { recognizePaddle } from './ocr/paddle';
 import { cancelTesseract, recognizeTesseract } from './ocr/tesseract';
 
 export type Emit = (event: EngineEvent) => void;
@@ -169,10 +170,15 @@ export async function runOcr(job: OcrJob, settings: Settings, emit: Emit): Promi
     let model = '';
 
     if (engine === 'local' || engine === 'hybrid') {
-      state.usesTesseract = true;
-      blocks = await recognizeTesseract(raster, settings.ocrLangs, settings.segmentation, progress);
-      state.usesTesseract = false;
-      model = `Tesseract · ${settings.ocrLangs.join('+')}`;
+      if (settings.ocrModel === 'paddle') {
+        blocks = await recognizePaddle(raster, controller.signal, progress);
+        model = 'PaddleOCR PP-OCRv5 mobile';
+      } else {
+        state.usesTesseract = true;
+        blocks = await recognizeTesseract(raster, settings.ocrLangs, settings.segmentation, progress);
+        state.usesTesseract = false;
+        model = `Tesseract · ${settings.ocrLangs.join('+')}`;
+      }
     }
     controller.signal.throwIfAborted();
 
