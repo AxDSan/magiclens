@@ -1,17 +1,18 @@
-# GitHub Pages (branch main, folder /): README.md becomes the home page, and the privacy
-# policy and terms are served from the same files the extension ships.
+# GitHub Pages (branch main, folder /): index.html is the landing page; the privacy policy and
+# terms are rendered from the same files the extension ships, with the site's own layout.
 title: MagicLens
 description: Read, select, translate and explain the text inside any image, right where it appears.
-theme: jekyll-theme-cayman
 
 defaults:
   - scope:
       path: PRIVACY.md
     values:
+      layout: legal
       permalink: /privacy/
   - scope:
       path: TERMS.md
     values:
+      layout: legal
       permalink: /terms/
 
 exclude:
@@ -19,7 +20,6 @@ exclude:
   - tests/
   - scripts/
   - public/
-  - assets/
   - store/
   - node_modules/
   - package.json
@@ -27,3 +27,4 @@ exclude:
   - tsconfig.json
   - "*.config.ts"
   - LICENSE
+  - README.md

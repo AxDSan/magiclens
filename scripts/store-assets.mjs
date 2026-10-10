@@ -1,11 +1,12 @@
 // Renders the store listing images into store/assets from a real Chrome build:
-// 1280x800 screenshots (all stores), promo tiles (Chrome, Edge) and a 300x300 logo (Edge).
+// 1280x800 screenshots (all stores), promo tiles (Chrome, Edge), a 300x300 logo (Edge), and
+// the landing page's social preview (web/og.png).
 // AI answers come from the scripted mock server the E2E tests use, so no key is needed.
 // Run: npm run store:assets
 import { spawn } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { createServer } from 'node:http';
-import { dirname, join } from 'node:path';
+import { dirname, isAbsolute, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from '@playwright/test';
 
@@ -153,12 +154,14 @@ try {
       ${tagline === null ? '' : `<div><div style="font-weight:700;font-size:${titleSize}px;letter-spacing:-0.01em">MagicLens</div>
       <div style="margin-top:${Math.round(titleSize * 0.2)}px;font-size:${Math.round(titleSize * 0.42)}px;opacity:.82;max-width:${Math.round(width * 0.6)}px">${tagline}</div></div>`}
       </body></html>`);
-    await art.screenshot({ path: join(out, name), omitBackground: tagline === null });
+    await art.screenshot({ path: isAbsolute(name) ? name : join(out, name), omitBackground: tagline === null });
     await art.close();
   };
   await tile('promo-small-440x280.png', 440, 280, 96, 40, 'Read the text inside any image');
   await tile('promo-marquee-1400x560.png', 1400, 560, 220, 88, 'Select, copy, translate and explain the text inside any image, right where it appears');
   await tile('logo-300x300.png', 300, 300, 300, 0, null);
+  // Social preview for the landing page (committed: the site serves it).
+  await tile(join(root, 'web', 'og.png'), 1200, 630, 200, 84, 'Every image is now text. Select, copy, translate and explain it, right where it appears.');
   console.log(`Store assets written to ${out}`);
 } finally {
   await context.close();

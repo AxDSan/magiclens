@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MagicLens: every image is now text</title>
+    <meta name="description" content="MagicLens reads the text inside any image on the web and lays it back over the image, so you can select, copy, translate and ask about it. Free, open source, private by default." />
+    <meta name="theme-color" content="#0a0b16" />
+    <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="MagicLens: every image is now text" />
+    <meta property="og:description" content="Select, copy, translate and explain the text inside any image, right where it appears. Free, open source, private by default." />
+    <meta property="og:url" content="https://axdsan.github.io/magiclens/" />
+    <meta property="og:image" content="https://axdsan.github.io/magiclens/web/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="stylesheet" href="web/site.css" />
+    <script src="web/demo.js" defer></script>
+  </head>
+  <body>
+    <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+
+    <header class="nav">
+      <a class="brand" href="./">
+        <img src="assets/icon.svg" alt="" width="30" height="30" />
+        <span>MagicLens</span>
+      </a>
+      <nav>
+        <a href="#features">Features</a>
+        <a href="#how">How it works</a>
+        <a href="#privacy">Privacy</a>
+        <a href="https://github.com/AxDSan/magiclens">GitHub</a>
+      </nav>
+      <a class="btn small" href="#install">Get it free</a>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="dot"></span>Free · Open source · Private by default</p>
+          <h1>Every image<br />is now <span class="spectrum-text">text.</span></h1>
+          <p class="lede">
+            MagicLens reads the words inside any image on the web and lays them back over it,
+            exactly where they are. Select them, copy them, translate them, or ask about them,
+            like any other text on the page.
+          </p>
+          <div class="cta">
+            <a class="btn primary" href="#install">Get MagicLens</a>
+            <a class="btn ghost" href="https://github.com/AxDSan/magiclens">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.83 1.19 3.09 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
+              Star on GitHub
+            </a>
+          </div>
+          <p class="browsers">Chrome · Edge · Firefox · Opera · Brave · Vivaldi · Arc</p>
+        </div>
+
+        <div class="demo" id="demo">
+          <div class="window">
+            <div class="window-bar">
+              <span></span><span></span><span></span>
+              <div class="url">wanderlust-weekly.com/lisbon</div>
+            </div>
+            <div class="window-body">
+              <div class="stage" id="stage" data-state="idle">
+                <canvas id="poster" width="1280" height="800" role="img" aria-label="A poster that reads: Noite de fado. Música ao vivo todas as sextas. Alfama, a partir das 21h. Entrada livre."></canvas>
+                <div class="fx" aria-hidden="true">
+                  <div class="veil"></div>
+                  <div class="edge"><div class="spin"></div></div>
+                  <div class="beam"></div>
+                  <div class="cells" id="cells"></div>
+                </div>
+                <div class="hls" id="hls" aria-hidden="true"></div>
+                <div class="words" id="words"></div>
+                <div class="trs" id="trs" aria-live="polite"></div>
+                <div class="bloom-wrap" aria-hidden="true"><div class="bloom" id="bloom"><div class="spin"></div></div></div>
+                <div class="ring" id="ring" aria-hidden="true"><div class="spin"></div></div>
+                <button class="lens-btn" id="lensBtn" type="button" aria-label="Read the text in this image">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 5 5M7.8 9.2h5.4M7.8 12h3.2" /></svg>
+                </button>
+                <div class="status" id="status"><i></i><span>Reading text</span></div>
+                <div class="cursor" id="cursor" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M4 2.5 19.5 13l-7 .9 4.2 7.4-3 1.6-4.1-7.5L4 20.4Z" fill="#fff" stroke="#111" stroke-width="1.3" stroke-linejoin="round"/></svg>
+                </div>
+              </div>
+              <div class="panel" id="panel">
+                <div class="panel-bar">
+                  <span class="meta"><i></i>4 lines · Tesseract</span>
+                  <button type="button" data-action="copy">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="8" y="8" width="12" height="12" rx="2.5" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg>
+                    <span>Copy</span>
+                  </button>
+                  <button type="button" data-action="translate">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h9M8.5 3v2M11 5c-1 4-3.6 7-7 8.5M6.5 8.5c1 2 2.8 3.6 5 4.5M13 21l4-10 4 10M14.5 17.5h5" /></svg>
+                    <span>Translate</span>
+                  </button>
+                  <button type="button" data-action="explain">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 13.8 9l5.7 1.8-5.7 1.8L12 18.5l-1.8-5.9L4.5 10.8 10.2 9Z" /><path d="M19 3v4M17 5h4" /></svg>
+                    <span>Explain</span>
+                  </button>
+                  <button type="button" data-action="replay" class="icon" aria-label="Replay">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1L3.5 8.5" /><path d="M3.5 3.5v5h5" /></svg>
+                  </button>
+                </div>
+                <div class="answer" id="answer" aria-live="polite"></div>
+              </div>
+            </div>
+          </div>
+          <p class="demo-hint">This is live. <b>Drag across the poster</b> to select its text, then try Translate.</p>
+        </div>
+      </section>
+
+      <section class="strip" aria-label="Highlights">
+        <div><b>0</b><span>servers, accounts or trackers</span></div>
+        <div><b>30</b><span>OCR languages, read on-device</span></div>
+        <div><b>11</b><span>AI providers, or none at all</span></div>
+        <div><b>0</b><span>long tasks on the page while it reads</span></div>
+      </section>
+
+      <section class="section" id="features">
+        <p class="eyebrow center">Features</p>
+        <h2>Text you couldn't touch, <span class="spectrum-text">now you can.</span></h2>
+        <div class="grid">
+          <article class="card">
+            <div class="icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3" /><circle cx="9" cy="10" r="2" /><path d="m21 16-5-5-9 9" /></svg></div>
+            <h3>Any image, anywhere</h3>
+            <p>Photos, screenshots, memes, CSS backgrounds, canvases, video frames, inline SVG, or any element you pick on the page.</p>
+          </article>
+          <article class="card">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M5 6h14M5 12h10M5 18h7" /><path d="M17 15v6M14 18h6" /></svg></div>
+            <h3>Pixel-perfect text layer</h3>
+            <p>Every word sits on its own glyphs, stretched to their exact width. Copy gives you clean spaces and line breaks.</p>
+          </article>
+          <article class="card">
+            <div class="icon"><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2.5" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg></div>
+            <h3>Local OCR, offline</h3>
+            <p>Tesseract and PaddleOCR run inside your browser. No account, no upload, nothing leaves your device.</p>
+          </article>
+          <article class="card">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M4 5h9M8.5 3v2M11 5c-1 4-3.6 7-7 8.5M6.5 8.5c1 2 2.8 3.6 5 4.5M13 21l4-10 4 10M14.5 17.5h5" /></svg></div>
+            <h3>Translate in place</h3>
+            <p>The translation is painted over the original paragraphs, like a printed page in your language.</p>
+          </article>
+          <article class="card">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3.5 13.8 9l5.7 1.8-5.7 1.8L12 18.5l-1.8-5.9L4.5 10.8 10.2 9Z" /></svg></div>
+            <h3>Ask the image</h3>
+            <p>Explain, summarize, or ask anything. Bring your own key, or run a small vision model locally with Ollama or LM Studio.</p>
+          </article>
+          <article class="card">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7Z" /></svg></div>
+            <h3>Smooth on busy pages</h3>
+            <p>Every effect runs on the compositor. The page you're reading never stutters while MagicLens works.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="how">
+        <p class="eyebrow center">How it works</p>
+        <h2>Three moves. No learning curve.</h2>
+        <ol class="steps">
+          <li>
+            <span class="num">1</span>
+            <h3>Point</h3>
+            <p>Hover an image and click the lens, right-click it, or press <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>L</kbd>.</p>
+          </li>
+          <li>
+            <span class="num">2</span>
+            <h3>Read</h3>
+            <p>Local OCR finds every word. With an AI provider, Hybrid mode lets the model correct it while keeping exact positions.</p>
+          </li>
+          <li>
+            <span class="num">3</span>
+            <h3>Use it</h3>
+            <p>Select, copy, translate in place, or ask a question. <kbd>Esc</kbd> puts the image back the way it was.</p>
+          </li>
+        </ol>
+      </section>
+
+      <section class="section privacy" id="privacy">
+        <div class="privacy-card">
+          <div>
+            <p class="eyebrow">Privacy</p>
+            <h2>It collects nothing.<br /><span class="spectrum-text">Really, nothing.</span></h2>
+            <p class="lede">
+              There is no MagicLens server. Local OCR never touches the network. If you connect an
+              AI provider, images go straight from your browser to the provider you picked, with
+              your own key, only when you ask.
+            </p>
+            <a class="link" href="privacy/">Read the privacy policy →</a>
+          </div>
+          <ul class="checks">
+            <li>No account</li>
+            <li>No analytics or telemetry</li>
+            <li>No ads</li>
+            <li>Keys stay on your device</li>
+            <li>Open source, Apache-2.0</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="section" id="providers">
+        <p class="eyebrow center">Bring your own AI</p>
+        <h2>Works with the model you already use.</h2>
+        <div class="marquee" aria-label="Supported AI providers">
+          <div class="track">
+            <span>OpenAI</span><span>Claude</span><span>Gemini</span><span>OpenRouter</span><span>Groq</span><span>Mistral</span><span>xAI</span><span>Together AI</span><span>Ollama</span><span>LM Studio</span><span>Any OpenAI-compatible server</span>
+            <span aria-hidden="true">OpenAI</span><span aria-hidden="true">Claude</span><span aria-hidden="true">Gemini</span><span aria-hidden="true">OpenRouter</span><span aria-hidden="true">Groq</span><span aria-hidden="true">Mistral</span><span aria-hidden="true">xAI</span><span aria-hidden="true">Together AI</span><span aria-hidden="true">Ollama</span><span aria-hidden="true">LM Studio</span><span aria-hidden="true">Any OpenAI-compatible server</span>
+          </div>
+        </div>
+        <p class="note">AI is optional. Local OCR reads, selects and copies without any of them.</p>
+      </section>
+
+      <section class="section" id="install">
+        <p class="eyebrow center">Install</p>
+        <h2>Get MagicLens.</h2>
+        <div class="stores">
+          <div class="store"><b>Chrome</b><span>Also Brave, Vivaldi, Arc</span><em>Coming soon</em></div>
+          <div class="store"><b>Edge</b><span>Microsoft Edge Add-ons</span><em>Coming soon</em></div>
+          <div class="store"><b>Firefox</b><span>Desktop and Android</span><em>Coming soon</em></div>
+          <div class="store"><b>Opera</b><span>Opera Add-ons</span><em>Coming soon</em></div>
+        </div>
+        <p class="note">Can't wait? <a class="link" href="https://github.com/AxDSan/magiclens#install-from-source">Build it from source</a> in two commands.</p>
+      </section>
+
+      <section class="section support">
+        <div class="support-card">
+          <h2>Free, no ads, made with care.</h2>
+          <p>If MagicLens saves you time, a coffee keeps it going.</p>
+          <a class="btn kofi" href="https://ko-fi.com/axdsan">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 6h12.5a4 4 0 0 1 0 8H16v.5A4.5 4.5 0 0 1 11.5 19h-3A4.5 4.5 0 0 1 4 14.5Zm12 2v4h.5a2 2 0 0 0 0-4Zm-6.5 1.3c-.9-.9-2.5-.3-2.5 1 0 1.3 2.5 3.2 2.5 3.2s2.5-1.9 2.5-3.2c0-1.3-1.6-1.9-2.5-1Z"/></svg>
+            Support on Ko-fi
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <a class="brand" href="./"><img src="assets/icon.svg" alt="" width="22" height="22" /><span>MagicLens</span></a>
+      <nav>
+        <a href="privacy/">Privacy</a>
+        <a href="terms/">Terms</a>
+        <a href="https://github.com/AxDSan/magiclens">GitHub</a>
+        <a href="https://ko-fi.com/axdsan">Ko-fi</a>
+      </nav>
+      <span class="fine">Apache-2.0 · Made in the open</span>
+    </footer>
+  </body>
+</html>

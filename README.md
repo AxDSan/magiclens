@@ -181,7 +181,8 @@ by hand from `store/listing.md` (text, permission justifications, privacy answer
 can be created from the command line with `npm run submit:firefox:first`. `npm run
 store:assets` renders the screenshots, promo tiles and logo into `store/assets/`.
 
-The site at https://axdsan.github.io/magiclens/ is GitHub Pages serving this README,
+The site at https://axdsan.github.io/magiclens/ is GitHub Pages: `index.html` and `web/` are
+the landing page with a live demo of the lens, and `_layouts/legal.html` renders
 [PRIVACY.md](PRIVACY.md) at `/privacy/` and [TERMS.md](TERMS.md) at `/terms/`.
 
 ## Known limits

@@ -114,13 +114,18 @@ export default defineConfig({
       : {}),
   }),
   zip: {
-    // Keep local tooling, test output and store images out of the archive AMO reviewers download.
+    // Keep local tooling, test output, store images and the website out of the archive AMO
+    // reviewers download.
     excludeSources: [
       'codedb.snapshot',
       '.codegraph/**',
       'test-results/**',
       'tests/e2e/.fixtures/**',
       'store/assets/**',
+      'index.html',
+      'web/**',
+      '_layouts/**',
+      '_config.yml',
     ],
   },
   hooks: {

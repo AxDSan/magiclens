@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ page.title }} · MagicLens</title>
+    <meta name="theme-color" content="#0a0b16" />
+    <link rel="icon" href="{{ site.baseurl }}/assets/icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="{{ site.baseurl }}/web/site.css" />
+  </head>
+  <body>
+    <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+    <header class="nav">
+      <a class="brand" href="{{ site.baseurl }}/">
+        <img src="{{ site.baseurl }}/assets/icon.svg" alt="" width="30" height="30" />
+        <span>MagicLens</span>
+      </a>
+      <nav>
+        <a href="{{ site.baseurl }}/privacy/">Privacy</a>
+        <a href="{{ site.baseurl }}/terms/">Terms</a>
+        <a href="https://github.com/AxDSan/magiclens">GitHub</a>
+      </nav>
+      <a class="btn small" href="{{ site.baseurl }}/#install">Get it free</a>
+    </header>
+    <main class="doc">
+      <article>{{ content }}</article>
+    </main>
+    <footer class="footer">
+      <a class="brand" href="{{ site.baseurl }}/"><img src="{{ site.baseurl }}/assets/icon.svg" alt="" width="22" height="22" /><span>MagicLens</span></a>
+      <nav>
+        <a href="{{ site.baseurl }}/privacy/">Privacy</a>
+        <a href="{{ site.baseurl }}/terms/">Terms</a>
+        <a href="https://github.com/AxDSan/magiclens">GitHub</a>
+        <a href="https://ko-fi.com/axdsan">Ko-fi</a>
+      </nav>
+      <span class="fine">Apache-2.0 · Made in the open</span>
+    </footer>
+  </body>
+</html>

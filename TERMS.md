@@ -4,8 +4,8 @@ Effective October 9, 2026
 
 Where other software puts a legal notice, here is a blessing:
 
-*May you do good and not evil.*
-*May you find forgiveness for yourself and forgive others.*
+*May you do good and not evil.*  
+*May you find forgiveness for yourself and forgive others.*  
 *May you share freely, never taking more than you give.*
 
 The blessing is borrowed, gratefully, from SQLite, whose authors put it where a copyright notice would go. The rest of this page is the rule of the house. Using MagicLens means you accept it; if you do not, go in peace and uninstall it.
