@@ -740,9 +740,6 @@ a.store em { background: rgba(91, 227, 168, 0.14); color: #7ef0bd; }
   .strip div:nth-child(-n + 2) { border-bottom: 1px solid var(--line); }
   .privacy-card { grid-template-columns: 1fr; padding: 36px; }
 }
-@media (max-width: 860px) {
-  .builds { grid-template-columns: 1fr; }
-}
 @media (max-width: 640px) {
   .nav nav { display: none; }
   .nav .btn.small { margin-left: auto; }
@@ -760,7 +757,7 @@ a.store em { background: rgba(91, 227, 168, 0.14); color: #7ef0bd; }
 }
 
 /* ───────────── changelog ───────────── */
-.builds { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; align-items: start; }
+.builds { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; align-items: start; }
 .build {
   padding: 26px;
   border: 1px solid var(--line);

@@ -8,6 +8,14 @@ Notable changes to MagicLens, newest first. A build is identified by the `versio
 `package.json`; the date is the day it was cut. Every tagged build also has its packages on the
 [GitHub releases page](https://github.com/AxDSan/magiclens/releases).
 
+<h2 id="v0-2-1"><a href="#v0-2-1">0.2.1 — 17 October 2026</a></h2>
+
+### Changed
+
+- The 128px extension icon now follows the Chrome Web Store layout rule: a 96×96 icon
+  centered in a 128×128 PNG with 16px of transparent padding on every side. It still reads on
+  light and dark backgrounds, and the other icon sizes are unchanged.
+
 <h2 id="v0-2-0"><a href="#v0-2-0">0.2.0 — 17 October 2026</a></h2>
 
 ### Added
