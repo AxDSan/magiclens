@@ -8,7 +8,7 @@ Notable changes to MagicLens, newest first. A build is identified by the `versio
 `package.json`; the date is the day it was cut. Every tagged build also has its packages on the
 [GitHub releases page](https://github.com/AxDSan/magiclens/releases).
 
-## Unreleased — 17 October 2026
+## 0.2.0 — 17 October 2026
 
 ### Added
 
