@@ -190,7 +190,8 @@ The site at https://axdsan.github.io/magiclens/ is GitHub Pages: `index.html` an
 the landing page with a live demo of the lens, `_layouts/legal.html` renders
 [PRIVACY.md](PRIVACY.md) at `/privacy/` and [TERMS.md](TERMS.md) at `/terms/`, and
 [CHANGELOG.md](CHANGELOG.md) at `/changelog/`. The landing page also summarizes the newest
-builds in its changelog section.
+builds in its changelog section. `google3454cf9f9c287b04.html` at the root is the
+site-ownership verification file the stores use; keep it in place.
 
 ## Known limits
 
