@@ -1,6 +1,6 @@
 {
   "name": "magiclens",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Read, select, translate and analyze the text inside any image on the web, in place.",
   "license": "Apache-2.0",
   "homepage": "https://axdsan.github.io/magiclens/",
