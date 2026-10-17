@@ -169,7 +169,9 @@ Firefox (`FIREFOX_BIN` overrides the path).
 The stores deliver updates; browsers install them on their own, and MagicLens applies a
 downloaded update as soon as no read is running. To ship a version:
 
-1. Bump `version` in `package.json`, commit, and push a matching tag (`v0.2.0`).
+1. Bump `version` in `package.json`, move the `Unreleased` section of
+   [CHANGELOG.md](CHANGELOG.md) under the new version, commit, and push a matching tag
+   (`v0.2.0`).
 2. The `Release` workflow tests, zips, attaches the packages to a GitHub release and submits
    them to the Chrome Web Store (API v2), Edge Add-ons and AMO with `npm run submit`.
    Secrets are listed in `store/submit.env.example`; the same file, saved as `.env.submit`,
@@ -182,8 +184,10 @@ can be created from the command line with `npm run submit:firefox:first`. `npm r
 store:assets` renders the screenshots, promo tiles and logo into `store/assets/`.
 
 The site at https://axdsan.github.io/magiclens/ is GitHub Pages: `index.html` and `web/` are
-the landing page with a live demo of the lens, and `_layouts/legal.html` renders
-[PRIVACY.md](PRIVACY.md) at `/privacy/` and [TERMS.md](TERMS.md) at `/terms/`.
+the landing page with a live demo of the lens, `_layouts/legal.html` renders
+[PRIVACY.md](PRIVACY.md) at `/privacy/` and [TERMS.md](TERMS.md) at `/terms/`, and
+[CHANGELOG.md](CHANGELOG.md) at `/changelog/`. The landing page also summarizes the newest
+builds in its changelog section.
 
 ## Known limits
 

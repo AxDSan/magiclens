@@ -740,6 +740,9 @@ a.store em { background: rgba(91, 227, 168, 0.14); color: #7ef0bd; }
   .strip div:nth-child(-n + 2) { border-bottom: 1px solid var(--line); }
   .privacy-card { grid-template-columns: 1fr; padding: 36px; }
 }
+@media (max-width: 860px) {
+  .builds { grid-template-columns: 1fr; }
+}
 @media (max-width: 640px) {
   .nav nav { display: none; }
   .nav .btn.small { margin-left: auto; }
@@ -754,6 +757,32 @@ a.store em { background: rgba(91, 227, 168, 0.14); color: #7ef0bd; }
   *, *::before, *::after { animation-duration: 0.001s !important; animation-iteration-count: 1 !important; transition-duration: 0.001s !important; }
   .cells, .comet, .beam { display: none; }
   .reveal { opacity: 1; transform: none; }
+}
+
+/* ───────────── changelog ───────────── */
+.builds { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; align-items: start; }
+.build {
+  padding: 26px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015));
+}
+.build-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.build-head b { color: var(--text); font-size: 18px; }
+.build-head span { color: var(--faint); font-size: 13px; }
+.build ul { margin: 0; padding-left: 18px; }
+.build li { margin: 6px 0; color: var(--muted); font-size: 15px; }
+.build code {
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.9em;
 }
 
 /* ───────────── legal pages ───────────── */

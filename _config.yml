@@ -1,5 +1,6 @@
-# GitHub Pages (branch main, folder /): index.html is the landing page; the privacy policy and
-# terms are rendered from the same files the extension ships, with the site's own layout.
+# GitHub Pages (branch main, folder /): index.html is the landing page; the privacy policy,
+# terms and changelog are rendered from the same files the extension ships, with the site's
+# own layout.
 title: MagicLens
 description: Read, select, translate and explain the text inside any image, right where it appears.
 
@@ -14,6 +15,11 @@ defaults:
     values:
       layout: legal
       permalink: /terms/
+  - scope:
+      path: CHANGELOG.md
+    values:
+      layout: legal
+      permalink: /changelog/
 
 exclude:
   - src/
