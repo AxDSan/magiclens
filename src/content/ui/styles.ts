@@ -299,6 +299,25 @@ export const STYLES = /* css */ `
 }
 .w::selection, .g::selection { background: rgba(70, 135, 255, 0.45); color: transparent; }
 
+/* Hyperlinks found in the recognized text. Each link is one <a> around its word spans, so
+   the browser treats it as a native link; these rules only restore the affordances the
+   absolute positioning would otherwise hide. */
+.txt a { color: inherit; text-decoration: none; }
+.txt a .w { cursor: pointer; }
+.txt a:hover .w,
+.txt a:focus-visible .w {
+  background: rgba(70, 135, 255, 0.26);
+  border-radius: 2px;
+}
+.txt a:focus-visible { outline: none; }
+.txt a:focus-visible .w { outline: 2px solid #4a9eff; outline-offset: 2px; }
+.ov[data-show] .txt a .w {
+  color: #1d4ed8;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+}
+.ov[data-show] .txt a:hover .w { color: #1740b0; }
+
 /* "Show text": the recognized text drawn back onto the image. */
 .lbg {
   position: absolute;

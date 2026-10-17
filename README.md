@@ -12,6 +12,9 @@ it as if it were normal page text.
   vision model locally with Ollama / LM Studio / any OpenAI-compatible server.
 - **Selectable text in place**: every word is positioned on its baseline and stretched to the
   exact width of the word in the image. Copy gives clean text with spaces and line breaks.
+- **Clickable links**: URLs, bare domains, email addresses and IPv4 hosts found in the text
+  become real links laid over the image — hover to see where they are, click to open them in a
+  new tab. `www.` and scheme-less hosts are normalized to `https://`, addresses to `mailto:`.
 - **Analysis**: explain, summarize, ask questions about the image, or translate it, with the
   translation painted over the original paragraphs, like a printed page in your language.
 - **Smooth**: the processing effects (a faint spectrum ring with a highlight running clockwise

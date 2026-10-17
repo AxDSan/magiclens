@@ -1,3 +1,4 @@
+import { findLinks, linksForWords, type TextLink } from '../../shared/hyperlinks';
 import type { OcrLine, OcrResult } from '../../shared/types';
 import { clamp } from '../../shared/util';
 
@@ -56,6 +57,8 @@ export interface TextLayer {
   backgrounds: DocumentFragment;
   text: DocumentFragment;
   words: WordRef[];
+  /** Number of hyperlinks found in the recognized text. */
+  links: number;
 }
 
 const f = (n: number) => +n.toFixed(5);
@@ -80,6 +83,7 @@ export function buildTextLayer(result: OcrResult): TextLayer {
   const backgrounds = document.createDocumentFragment();
   const text = document.createDocumentFragment();
   const words: WordRef[] = [];
+  let linkCount = 0;
   const allWords = result.blocks.reduce((n, b) => n + b.lines.reduce((k, l) => k + l.words.length, 0), 0);
   const lineHighlights = allWords > 400;
   let lineIndex = 0;
@@ -129,15 +133,45 @@ export function buildTextLayer(result: OcrResult): TextLayer {
           (angle
             ? `transform-origin:0 calc(var(--fh)*${f(m.ascent * font)}px);transform:rotate(${f(angle)}rad) scaleX(calc(${f(stretch)}*var(--ar)))`
             : `transform:scaleX(calc(${f(stretch)}*var(--ar)))`);
-        text.appendChild(span);
       };
 
       const lineWords = line.words.filter((word) => word.text);
+      // Hyperlinks are found on the line as rendered (words joined by single spaces), then
+      // mapped back to the words that overlap them.
+      const lineText = lineWords.map((word) => word.text).join(' ');
+      const links: TextLink[] = findLinks(lineText);
+      linkCount += links.length;
+      const linkFor = linksForWords(lineWords.map((word) => word.text), links);
+      // Every link becomes one <a>, so a split URL is a single tab stop and one native
+      // browser link (status bar preview, context menu, middle click). Spans stay positioned
+      // against .txt because the anchor itself is in normal flow.
+      let anchor: HTMLAnchorElement | null = null;
+      let anchorFor = -1;
+      const host = (index: number): Node => {
+        if (index < 0) {
+          anchor = null;
+          anchorFor = -1;
+          return text;
+        }
+        if (anchor && anchorFor === index) return anchor;
+        const link = links[index];
+        anchor = document.createElement('a');
+        anchor.href = link.href;
+        // A mailto: destination is handed to the OS; only web links need a new tab.
+        if (link.kind === 'url') {
+          anchor.target = '_blank';
+          anchor.rel = 'noopener noreferrer';
+        }
+        anchor.title = link.href;
+        text.appendChild(anchor);
+        anchorFor = index;
+        return anchor;
+      };
       lineWords.forEach((word, i) => {
         const span = document.createElement('span');
         span.className = 'w';
         place(span, word.text, word.box.x, word.box.w, word.box.y, word.box.h);
-        words.push({ span, text: word.text, line: thisLine, block: blockIndex });
+        host(linkFor[i]).appendChild(span);
         if (!lineHighlights) addHighlight(line, word.box.x, word.box.y, word.box.w, word.box.h);
         // A stretched space between words keeps the selection highlight continuous.
         const next = lineWords[i + 1];
@@ -146,11 +180,14 @@ export function buildTextLayer(result: OcrResult): TextLayer {
           const spacer = document.createElement('span');
           spacer.className = 'g';
           place(spacer, ' ', word.box.x + word.box.w, gap, word.box.y, word.box.h);
+          // The gap belongs to the link only when both words do.
+          host(linkFor[i + 1] === linkFor[i] ? linkFor[i] : -1).appendChild(spacer);
         }
+        words.push({ span, text: word.text, line: thisLine, block: blockIndex });
       });
     }
   });
-  return { highlights, backgrounds, text, words };
+  return { highlights, backgrounds, text, words, links: linkCount };
 }
 
 /** Plain text of the part of the layer covered by `range`, with real spaces and newlines. */

@@ -27,6 +27,8 @@ export class Overlay {
   result: OcrResult | null = null;
   image: string | null = null;
   words: WordRef[] = [];
+  /** Hyperlinks found in the recognized text. */
+  links = 0;
   panel: Panel | null = null;
   showText = false;
   translations: Record<string, string> | null = null;
@@ -149,6 +151,7 @@ export class Overlay {
     this.bgs.replaceChildren(layer.backgrounds);
     this.txt.replaceChildren(layer.text);
     this.words = layer.words;
+    this.links = layer.links;
     this.el.style.setProperty('--lh', String(fontMetrics().ascent + fontMetrics().descent));
     if (!firstReveal) this.el.toggleAttribute('data-revealed', true);
 
@@ -171,8 +174,8 @@ export class Overlay {
 
   private describe(result: OcrResult) {
     const lines = result.blocks.reduce((n, b) => n + b.lines.length, 0);
-    const engine = result.model;
-    return `${lines} line${lines === 1 ? '' : 's'} · ${engine}`;
+    const links = this.links ? ` · ${this.links} link${this.links === 1 ? '' : 's'}` : '';
+    return `${lines} line${lines === 1 ? '' : 's'}${links} · ${result.model}`;
   }
 
   ensurePanel() {

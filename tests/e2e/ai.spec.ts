@@ -83,6 +83,38 @@ test.describe('AI providers (mock OpenAI-compatible server)', () => {
     expect(box.y + box.height).toBeGreaterThan(heading.y);
   });
 
+  test('URLs in the image become real links', async ({ page, sw }) => {
+    await useMockProvider(sw, 'llm');
+    const url = 'http://localhost:4599/index.html';
+    const lines = truthLines(FIXTURES.doc).map((line, i) =>
+      i === 2 ? { ...line, text: `Docs live at ${url}` } : line,
+    );
+    await scriptMock({ lines });
+    await lensByHover(page, '#plain');
+    await waitForState(page, 'ready');
+
+    const links = page.locator('magiclens-root .txt a');
+    await expect(links).toHaveCount(1);
+    const link = links.first();
+    await expect(link).toHaveAttribute('href', url);
+    await expect(link).toHaveAttribute('target', '_blank');
+    await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    // Only the URL is wrapped, not the words around it.
+    await expect(link.locator('.w')).toHaveCount(1);
+    await expect(link.locator('.w')).toHaveText(url);
+    await expect(page.locator('magiclens-root .panel .meta')).toContainText('1 link');
+
+    const word = link.locator('.w');
+    await word.hover();
+    expect(await word.evaluate((el) => getComputedStyle(el).cursor)).toBe('pointer');
+
+    // `rel=noopener` means the popup has no opener, so it is reported by the context.
+    const [popup] = await Promise.all([page.context().waitForEvent('page'), word.click()]);
+    await popup.waitForLoadState('domcontentloaded');
+    expect(popup.url()).toBe(url);
+    await popup.close();
+  });
+
   test('without a provider, AI actions point to settings', async ({ page, sw }) => {
     await sw.evaluate(async () => {
       await chrome.storage.local.set({ settings: { engine: 'local', provider: 'openai' } });
