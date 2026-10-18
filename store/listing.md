@@ -82,6 +82,16 @@ Support, Photos, Music & Videos.
 
 The 128px store icon comes from the package on every store.
 
+**Screenshot captions** (for the dashboards that accept one, such as AMO and Opera):
+
+| File | Caption |
+| --- | --- |
+| `1-reading.png` | Hover any image and MagicLens reads it, right where the text sits. |
+| `2-select.png` | Select the words in place, then copy them with clean spaces and line breaks. |
+| `3-translate.png` | Translate in place: the translation is painted over the original paragraphs. |
+| `4-explain.png` | Explain, summarize or ask questions about what the image says. |
+| `5-settings.png` | Local OCR or your own AI provider — the keys stay on your device. |
+
 ## Chrome Web Store: Privacy tab
 
 **Single purpose:**
