@@ -212,6 +212,20 @@ h3 { font-size: 18px; letter-spacing: -0.01em; }
 .demo-hint { margin: 18px 0 0; color: var(--faint); font-size: 13.5px; text-align: center; }
 .demo-hint b { color: var(--muted); font-weight: 600; }
 
+/* Embedded demo video. */
+.video {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  max-width: 900px;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: #000;
+  box-shadow: 0 40px 90px -50px rgba(140, 110, 255, 0.6);
+}
+.video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
 /* The stage reproduces MagicLens's own overlay on a poster. */
 .stage {
   position: relative;
