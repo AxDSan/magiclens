@@ -176,9 +176,10 @@ downloaded update as soon as no read is running. To ship a version:
    [CHANGELOG.md](CHANGELOG.md) under the new version, commit, and push a matching tag
    (`v0.2.0`).
 2. The `Release` workflow tests, zips, attaches the packages to a GitHub release and submits
-   them to the Chrome Web Store (API v2), Edge Add-ons and AMO with `npm run submit`.
+   the stores whose credentials exist (Chrome v2, Edge and AMO) with `npm run submit`.
    Secrets are listed in `store/submit.env.example`; the same file, saved as `.env.submit`,
    drives `npm run zip:all && npm run submit` locally (`npm run submit:dry` checks the keys).
+   Until Chrome and Edge are configured, use `npm run submit:firefox` for AMO.
 3. Upload the Opera zip from the release by hand: Opera has no supported publishing API.
 
 The store APIs only update listings that exist. The first version of each listing is created

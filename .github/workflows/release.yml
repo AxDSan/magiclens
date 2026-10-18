@@ -47,4 +47,20 @@ jobs:
           FIREFOX_EXTENSION_ID: magiclens@magiclens.dev
           FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
           FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
-        run: npm run submit
+        run: |
+          version=$(node -p "require('./package.json').version")
+          args=()
+          if [ -n "$CHROME_PUBLISHER_ID" ] && [ -n "$CHROME_SERVICE_ACCOUNT_PRIVATE_KEY" ]; then
+            args+=(--chrome-zip ".output/magiclens-$version-chrome.zip")
+          fi
+          if [ -n "$EDGE_CLIENT_ID" ] && [ -n "$EDGE_API_KEY" ]; then
+            args+=(--edge-zip ".output/magiclens-$version-edge.zip")
+          fi
+          if [ -n "$FIREFOX_JWT_ISSUER" ] && [ -n "$FIREFOX_JWT_SECRET" ]; then
+            args+=(--firefox-zip ".output/magiclens-$version-firefox.zip" --firefox-sources-zip ".output/magiclens-$version-sources.zip")
+          fi
+          if [ ${#args[@]} -eq 0 ]; then
+            echo "No store credentials configured; nothing to submit."
+            exit 0
+          fi
+          npx wxt submit "${args[@]}"

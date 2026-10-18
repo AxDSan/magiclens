@@ -30,6 +30,7 @@
     "store:assets": "wxt build -b chrome && node scripts/store-assets.mjs",
     "submit:firefox:first": "wxt zip -b firefox && web-ext sign --source-dir .output/firefox-mv3 --channel listed --amo-metadata store/amo-metadata.json --upload-source-code .output/magiclens-$npm_package_version-sources.zip --approval-timeout 0",
     "submit": "wxt submit --chrome-zip .output/magiclens-$npm_package_version-chrome.zip --edge-zip .output/magiclens-$npm_package_version-edge.zip --firefox-zip .output/magiclens-$npm_package_version-firefox.zip --firefox-sources-zip .output/magiclens-$npm_package_version-sources.zip --firefox-amo-metadata-file store/amo-metadata.json",
+    "submit:firefox": "wxt submit --firefox-zip .output/magiclens-$npm_package_version-firefox.zip --firefox-sources-zip .output/magiclens-$npm_package_version-sources.zip",
     "submit:dry": "npm run submit -- --dry-run"
   },
   "devDependencies": {
