@@ -29,7 +29,8 @@ MagicLens makes network requests only in these cases, and only to the destinatio
 
 Local OCR alone makes none of the requests in item 3.
 
-On Firefox, choosing a cloud AI provider asks for the browser's built-in consent to share website content before anything is sent.
+On Firefox, choosing a cloud AI provider asks for the browser's built-in consent to share
+website content and the provider credentials you entered before anything is sent.
 
 ## Permissions
 

@@ -8,6 +8,15 @@ Notable changes to MagicLens, newest first. A build is identified by the `versio
 `package.json`; the date is the day it was cut. Every tagged build also has its packages on the
 [GitHub releases page](https://github.com/AxDSan/magiclens/releases).
 
+<h2 id="v0-2-2"><a href="#v0-2-2">0.2.2 — 17 October 2026</a></h2>
+
+### Changed
+
+- Firefox's manifest now declares `authenticationInfo` alongside `websiteContent` in its data
+  collection permissions, and the options page requests both when a cloud AI provider is
+  chosen. The install consent now matches what the extension actually sends; AMO requires the
+  declaration for new listings.
+
 <h2 id="v0-2-1"><a href="#v0-2-1">0.2.1 — 17 October 2026</a></h2>
 
 ### Changed

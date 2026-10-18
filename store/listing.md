@@ -12,6 +12,25 @@ writes them to `store/assets/`. Firefox metadata for the API lives in `amo-metad
 | Donations | https://ko-fi.com/axdsan |
 | Source | https://github.com/AxDSan/magiclens (Apache-2.0) |
 
+## Before you submit
+
+Checked against the official docs on 2026-10-17.
+
+- **Chrome:** 2-Step Verification is mandatory on the Google account, and the contact email
+  must be verified. Create the item in the dashboard first — API v2 cannot create items or
+  change visibility — then fill the Store listing and Privacy tabs before publishing. The API
+  needs the service account email added under Dashboard → Account (one service account per
+  publisher), and the version must increase on every upload.
+- **Edge:** the first listing is created in Partner Center; the Publish API only updates an
+  existing one and ignores metadata. API keys expire, so record the date. Certification can
+  take up to 7 business days, with no staged rollout.
+- **Firefox:** 2FA is mandatory on the Mozilla account. The first listed version needs
+  `--amo-metadata` and the sources archive; the manifest declares data collection
+  (`required: none`, `optional: authenticationInfo + websiteContent`).
+- **Opera:** no publishing API. Upload by hand, ship readable code or a source link, and use
+  non-interlaced PNGs. Reviews in 2026 are taking weeks, not days.
+- **All:** the packaged 128px icon is 96x96 artwork with 16px of transparent padding.
+
 ## Text
 
 **Name:** MagicLens
@@ -93,6 +112,17 @@ purpose, not used for creditworthiness or lending.
 
 **Privacy policy URL:** https://axdsan.github.io/magiclens/privacy/
 
+**Official URL:** verify the site in Search Console first — `google3454cf9f9c287b04.html` is
+already served from the site root — then pick it under **Store listing → Official URL**. That
+is what shows a linked site under the listing title.
+
+**Trader status:** the store asks every publisher for an EU trader / non-trader declaration.
+Traders must supply contact details that are shown publicly on the listing.
+
+**Review:** every upload needs a higher `version` in the package. Publishing through the API
+always uses the visibility already set in the dashboard; visibility itself cannot be changed
+through the API.
+
 ## Edge Add-ons
 
 Same package as Chrome (`magiclens-<version>-edge.zip`), same description and privacy URL.
@@ -105,17 +135,30 @@ the Chrome data usage above.
 No account or key is needed to test. Open any page with an image, hover the image and click the round lens button in its corner: local OCR (Tesseract, bundled) reads the text and makes it selectable in place. AI features (Translate, Explain, Ask) need the user's own provider key or a local model and are optional. Source: https://github.com/AxDSan/magiclens
 ```
 
+The Publish API product ID is the GUID on the Extension overview page in Partner Center
+(between `microsoftedge/` and `/packages`), not the store extension ID. Uploading replaces the
+current draft; publishing submits it for certification. API keys expire — record the date.
+
 ## Opera Add-ons
 
 Upload `magiclens-<version>-opera.zip`. Opera reviewers ask for readable sources of bundled or
 minified code: link https://github.com/AxDSan/magiclens and attach
 `magiclens-<version>-sources.zip`, with the build steps from `amo-metadata.json`
-(`version.approval_notes`). Use the same certification note as Edge.
+(`version.approval_notes`). Use the same certification note as Edge. Reviewers reject
+interlaced PNGs, so export icons and screenshots non-interlaced. Reviews are done by hand and
+can take weeks.
 
 ## Firefox Add-ons (AMO)
 
 `npm run submit:firefox:first` creates the listing through the API with `amo-metadata.json`
-and uploads the sources archive. Afterwards, on the AMO edit page, set:
+and uploads the sources archive. The Mozilla account needs 2FA before AMO issues API keys, and
+the first listed version must carry the metadata (later versions reuse the license). Afterwards,
+on the AMO edit page, set:
 - **Support site:** https://github.com/AxDSan/magiclens/issues (not settable through the API)
 - **Privacy policy:** paste `PRIVACY.md`
 - **Screenshots:** `store/assets/1-5`
+
+The manifest declares Firefox's data collection (`required: none`,
+`optional: authenticationInfo + websiteContent`), and the options page requests that consent
+when a cloud provider is chosen. Listed submissions are reviewed by a person; the command uses
+`--approval-timeout 0` so CI does not block waiting for it.

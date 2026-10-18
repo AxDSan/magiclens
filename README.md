@@ -184,7 +184,9 @@ downloaded update as soon as no read is running. To ship a version:
 The store APIs only update listings that exist. The first version of each listing is created
 by hand from `store/listing.md` (text, permission justifications, privacy answers); Firefox's
 can be created from the command line with `npm run submit:firefox:first`. `npm run
-store:assets` renders the screenshots, promo tiles and logo into `store/assets/`.
+store:assets` renders the screenshots, promo tiles and logo into `store/assets/`. Chrome
+requires 2-Step Verification on the Google account (and its API v2 cannot create items), and
+AMO requires 2FA on the Mozilla account before it issues API keys.
 
 The site at https://axdsan.github.io/magiclens/ is GitHub Pages: `index.html` and `web/` are
 the landing page with a live demo of the lens, `_layouts/legal.html` renders

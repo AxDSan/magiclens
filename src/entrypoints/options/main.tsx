@@ -71,11 +71,13 @@ function Toggle(props: { label: string; text?: string; checked: boolean; onChang
   );
 }
 
-/** Firefox asks for consent before an extension sends page content to a third party. */
+/** Firefox asks for consent before an extension sends page content or the provider key out. */
 async function requestDataConsent() {
   if (!navigator.userAgent.includes('Firefox')) return;
   try {
-    await (browser.permissions.request as (p: unknown) => Promise<boolean>)({ data_collection: ['websiteContent'] });
+    await (browser.permissions.request as (p: unknown) => Promise<boolean>)({
+      data_collection: ['authenticationInfo', 'websiteContent'],
+    });
   } catch {
     // Older Firefox without data-collection permissions.
   }
